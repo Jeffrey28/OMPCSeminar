@@ -28,16 +28,12 @@ init_values = [0;0;1;0;0;0;0;0]; % p,Dp,x,Dx,y,Dy,X,Y (just drives in x-dir.)
 
 p = Yout(:, 1)';
 Dp = Yout(:, 2)';
-x = Yout(:, 3)';
+x = Yout(:, 3)'; % Not interesting for state vector in paper
 Dx = Yout(:, 4)';
-y = Yout(:, 5)';
+y = Yout(:, 5)'; % Not interesting for state vector in paper
 Dy = Yout(:, 6)';
 X = Yout(:, 7)';
 Y = Yout(:, 8)';
 
 plot(tout, p);
-%plot(tout, Dp);
-
-% [tout, Yout] = ode45(func, [0, 30], [init1, init2]);
-% 
-% plot(tout, Yout);                
+%plot(tout, Dp);        
