@@ -1,0 +1,48 @@
+addpath('C:\Program Files\MATLAB\R2016a\casadi-matlabR2014b-v3.0.0')
+import casadi.*
+
+% % Initialize all
+% var0 = [0;0;0;0;0];
+% var1 = [10;0;0;0;0];
+% var2 = [0;0;0;0;0];
+% 
+% [result] = ode45(@dgl, var0, var1, var2);
+
+syms x(t) y(t) X(t) Y(t) p(t);
+
+m = 1000;
+I = 300;
+a = 1;
+b = 1;
+F_x_f = 1000;
+F_x_r = 1000;
+F_y_f = 100;
+F_y_r = 100;
+
+eq1 = m*diff(x, 2) == m*diff(y)*diff(p)+2*F_x_f+2*F_x_r;
+eq2 = m*diff(y, 2) == -m*diff(x)*diff(p)+2*F_y_f+2*F_y_r;
+eq3 = I*diff(p, 2) == -m*diff(x)*diff(p)+2*F_y_f+2*F_y_r;
+eq4 = diff(X) == diff(x)*cos(p)-diff(y)*sin(p);
+eq5 = diff(Y) == diff(x)*sin(p)+diff(y)*cos(p);
+
+[rightSideOfODE, substitutions] = odeToVectorField(eq1, eq2, eq3, eq4, eq5);
+func = matlabFunction(rightSideOfODE, 'vars', {'t','Y'});
+
+t_horizon = [0, 30];
+init_values = [0;0;1;0;0;0;0;0]; % p,Dp,x,Dx,y,Dy,X,Y
+
+[tout, Yout] = ode45(func, t_horizon, init_values);
+
+p = Yout(:, 1)';
+Dp = Yout(:, 2)';
+Dx = Yout(:, 3)';
+y = Yout(:, 4)';
+Dy = Yout(:, 5)';
+X = Yout(:, 6)';
+Y = Yout(:, 7)';
+
+plot(tout, p);
+
+% [tout, Yout] = ode45(func, [0, 30], [init1, init2]);
+% 
+% plot(tout, Yout);                
