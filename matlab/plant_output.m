@@ -11,9 +11,18 @@ function [ y ] = plant_output( x, u, Ts, k, pars)
 % OUTPUTS:
 %  y    : output of the plant at step k.
 
-yExact = 0; % TODO: compute this
-measurementNoise = 0; % TODO: choose appropriately
-y = yExact + measurementNoise; % add noise to outputs
+% Get ideal measurements
+yExact = zeros(2,1);
+yExact(1) = x(5); % p
+yExact(2) = x(8); % Y
+
+% Add noise to ideal measurement
+mu1 = 0;
+std1 = 0.5;
+mu2 = 0;
+std2 = 0.5;
+measurementNoise = [normrnd(mu1, std1); normrnd(mu2, std2)];
+y = yExact + measurementNoise;
 
 end
 

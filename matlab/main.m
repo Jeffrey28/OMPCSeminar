@@ -1,8 +1,5 @@
 clear all;
 
-%addpath('C:\Program Files\MATLAB\R2016a\casadi-matlabR2014b-v3.0.0')
-%import casadi.*
-
 %% initialize
 pars = plant_init();
 k=0;
