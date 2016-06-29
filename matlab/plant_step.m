@@ -11,7 +11,7 @@ function [ xNext ] = plant_step( xOld, u, Ts, k, pars )
 % OUTPUTS:
 %  xNext: state of the plant at step k+1
 
-syms x(t) y(t) X(t) Y(t) p(t);
+%syms x(t) y(t) X(t) Y(t) p(t);
 
 % Initialization of working variables
 x_value = xOld(1);
@@ -25,7 +25,7 @@ Y_value = xOld(8);
 
 % Initialization of car's geometrics
 m = pars.m; % 1000?
-I = pars.I; % 300?
+%I = pars.I; % 300?
 g = pars.g; % 9.81?
 a = pars.a; % 1?
 b = pars.b; % 1?
@@ -116,36 +116,57 @@ F_x_r = F_l_r*cosd(delta_r)-F_c_r*sind(delta_r);
 F_y_f = F_l_f*sind(delta_f)+F_c_f*cosd(delta_f);
 F_y_r = F_l_r*sind(delta_r)+F_c_r*cosd(delta_r);
 
-% Physical equations
-eq1 = m*diff(x, 2) == m*diff(y)*diff(p)+2*F_x_f+2*F_x_r;
-eq2 = m*diff(y, 2) == -m*diff(x)*diff(p)+2*F_y_f+2*F_y_r;
-eq3 = I*diff(p, 2) == -m*diff(x)*diff(p)+2*F_y_f+2*F_y_r;
-eq4 = diff(X) == diff(x)*cos(p)*(pi/180)-diff(y)*sin(p)*(pi/180);
-eq5 = diff(Y) == diff(x)*sin(p)*(pi/180)+diff(y)*cos(p)*(pi/180);
+tspan = [k,k+Ts];
+init = [x_value; Dx_value; y_value; Dy_value; p_value; Dp_value; X_value; Y_value]; % x,Dx,y,Dy,p,Dp,X,Y
+[tout, Yout]=ode45(@(t, x) dgl(t,x,pars,F_x_f,F_x_r,F_y_f,F_y_r),tspan,init);
+%[tout, Yout]=ode45(@(t, x) dgl(t,x,pars,-10,0,-10,0),tspan,init);
 
-[rightSideOfODE, subs] = odeToVectorField(eq1, eq2, eq3, eq4, eq5);
-func = matlabFunction(rightSideOfODE, 'vars', {'t','Y'});
-
-t_horizon = [k k+Ts];
-init_values = [p_value; Dp_value; x_value; Dx_value; y_value; Dy_value; X_value; Y_value];
-[tout, Yout] = ode45(func, t_horizon, init_values);
+% % Physical equations
+% eq1 = m*diff(x, 2) == m*diff(y)*diff(p)+2*F_x_f+2*F_x_r;
+% eq2 = m*diff(y, 2) == -m*diff(x)*diff(p)+2*F_y_f+2*F_y_r;
+% eq3 = I*diff(p, 2) == -m*diff(x)*diff(p)+2*F_y_f+2*F_y_r;
+% eq4 = diff(X) == diff(x)*cos(p)*(pi/180)-diff(y)*sin(p)*(pi/180);
+% eq5 = diff(Y) == diff(x)*sin(p)*(pi/180)+diff(y)*cos(p)*(pi/180);
+% 
+% [rightSideOfODE, subs] = odeToVectorField(eq1, eq2, eq3, eq4, eq5);
+% func = matlabFunction(rightSideOfODE, 'vars', {'t','Y'});
+% 
+% t_horizon = [k k+Ts];
+% init_values = [p_value; Dp_value; x_value; Dx_value; y_value; Dy_value; X_value; Y_value];
+% [tout, Yout] = ode45(func, t_horizon, init_values);
 
 % Update the working variables
-x_values = Yout(:, 3);
+x_values = Yout(:, 1);
 xNext(1) = x_values(end);
-Dx_values = Yout(:, 4);
+Dx_values = Yout(:, 2);
 xNext(2) = Dx_values(end);
-y_values = Yout(:, 5); 
+y_values = Yout(:, 3); 
 xNext(3) = y_values(end);
-Dy_values = Yout(:, 6);
+Dy_values = Yout(:, 4);
 xNext(4) = Dy_values(end);
-p_values = Yout(:, 1);
+p_values = Yout(:, 5);
 xNext(5) = p_values(end);
-Dp_values = Yout(:, 2);
+Dp_values = Yout(:, 6);
 xNext(6) = Dp_values(end);
 X_values = Yout(:, 7);
 xNext(7) = X_values(end);
 Y_values = Yout(:, 8);
 xNext(8) = Y_values(end);
+% x_values = Yout(:, 3);
+% xNext(1) = x_values(end);
+% Dx_values = Yout(:, 4);
+% xNext(2) = Dx_values(end);
+% y_values = Yout(:, 5); 
+% xNext(3) = y_values(end);
+% Dy_values = Yout(:, 6);
+% xNext(4) = Dy_values(end);
+% p_values = Yout(:, 1);
+% xNext(5) = p_values(end);
+% Dp_values = Yout(:, 2);
+% xNext(6) = Dp_values(end);
+% X_values = Yout(:, 7);
+% xNext(7) = X_values(end);
+% Y_values = Yout(:, 8);
+% xNext(8) = Y_values(end);
 
 end
