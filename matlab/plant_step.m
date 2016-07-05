@@ -121,20 +121,6 @@ init = [x_value; Dx_value; y_value; Dy_value; p_value; Dp_value; X_value; Y_valu
 [tout, Yout]=ode45(@(t, x) dgl(t,x,pars,F_x_f,F_x_r,F_y_f,F_y_r),tspan,init);
 %[tout, Yout]=ode45(@(t, x) dgl(t,x,pars,-10,0,-10,0),tspan,init);
 
-% % Physical equations
-% eq1 = m*diff(x, 2) == m*diff(y)*diff(p)+2*F_x_f+2*F_x_r;
-% eq2 = m*diff(y, 2) == -m*diff(x)*diff(p)+2*F_y_f+2*F_y_r;
-% eq3 = I*diff(p, 2) == -m*diff(x)*diff(p)+2*F_y_f+2*F_y_r;
-% eq4 = diff(X) == diff(x)*cos(p)*(pi/180)-diff(y)*sin(p)*(pi/180);
-% eq5 = diff(Y) == diff(x)*sin(p)*(pi/180)+diff(y)*cos(p)*(pi/180);
-% 
-% [rightSideOfODE, subs] = odeToVectorField(eq1, eq2, eq3, eq4, eq5);
-% func = matlabFunction(rightSideOfODE, 'vars', {'t','Y'});
-% 
-% t_horizon = [k k+Ts];
-% init_values = [p_value; Dp_value; x_value; Dx_value; y_value; Dy_value; X_value; Y_value];
-% [tout, Yout] = ode45(func, t_horizon, init_values);
-
 % Update the working variables
 x_values = Yout(:, 1);
 xNext(1) = x_values(end);
@@ -152,21 +138,5 @@ X_values = Yout(:, 7);
 xNext(7) = X_values(end);
 Y_values = Yout(:, 8);
 xNext(8) = Y_values(end);
-% x_values = Yout(:, 3);
-% xNext(1) = x_values(end);
-% Dx_values = Yout(:, 4);
-% xNext(2) = Dx_values(end);
-% y_values = Yout(:, 5); 
-% xNext(3) = y_values(end);
-% Dy_values = Yout(:, 6);
-% xNext(4) = Dy_values(end);
-% p_values = Yout(:, 1);
-% xNext(5) = p_values(end);
-% Dp_values = Yout(:, 2);
-% xNext(6) = Dp_values(end);
-% X_values = Yout(:, 7);
-% xNext(7) = X_values(end);
-% Y_values = Yout(:, 8);
-% xNext(8) = Y_values(end);
 
 end
