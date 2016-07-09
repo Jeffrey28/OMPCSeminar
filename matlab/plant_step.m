@@ -32,8 +32,8 @@ b = pars.b; % 1?
 F_z_f = (b*m*g) / (2*(a+b));
 F_z_r = (a*m*g) / (2*(a+b));
 
-delta_f = u; % Front axis steering angle
-delta_r = 0; % Rear axis steering angle
+delta_f = u; % Front axis steering angle in degrees
+delta_r = 0; % Rear axis steering angle in degrees
 
 % Wheel's equations update
 v_y_f = Dy_value+a*Dp_value;
