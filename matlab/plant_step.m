@@ -11,8 +11,6 @@ function [ xNext ] = plant_step( xOld, u, Ts, k, pars )
 % OUTPUTS:
 %  xNext: state of the plant at step k+1
 
-%syms x(t) y(t) X(t) Y(t) p(t);
-
 % Initialization of working variables
 x_value = xOld(1);
 Dx_value = xOld(2);
@@ -49,7 +47,7 @@ v_c_f = v_y_f*cosd(delta_f)-v_x_f*sind(delta_f);
 v_c_r = v_y_r*cosd(delta_r)-v_x_r*sind(delta_r);
 
 % Tire models by Pacejca
-% Web page: http://www-cdr.stanford.edu/dynamic/bywire/tires.pdf)
+% Web page: http://www-cdr.stanford.edu/dynamic/bywire/tires.pdf
 
 % Lateral / front
 a1_c = -22.1;
@@ -116,10 +114,9 @@ F_x_r = F_l_r*cosd(delta_r)-F_c_r*sind(delta_r);
 F_y_f = F_l_f*sind(delta_f)+F_c_f*cosd(delta_f);
 F_y_r = F_l_r*sind(delta_r)+F_c_r*cosd(delta_r);
 
-tspan = [k,k+Ts];
+tspan = [k*Ts,(k+1)*Ts];
 init = [x_value; Dx_value; y_value; Dy_value; p_value; Dp_value; X_value; Y_value]; % x,Dx,y,Dy,p,Dp,X,Y
 [tout, Yout]=ode45(@(t, x) dgl(t,x,pars,F_x_f,F_x_r,F_y_f,F_y_r),tspan,init);
-%[tout, Yout]=ode45(@(t, x) dgl(t,x,pars,-10,0,-10,0),tspan,init);
 
 % Update the working variables
 x_values = Yout(:, 1);

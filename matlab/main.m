@@ -5,12 +5,13 @@ pars = plant_init();
 k=0;
 Ts = pars.Ts;
 x0 = pars.x0;
+flag = 1;
 
 xHat = []; % TODO: Initial state guess (don't cheat and use x0 ;-P )
 
 while true
     %% compute next controls
-    u = OMPC(xHat, Ts);
+    u = OMPC(xHat, Ts, flag);
     
     %% update to time step k+1
     xNext = plant_step(x, u, Ts, k, pars); % simulate next timestep
