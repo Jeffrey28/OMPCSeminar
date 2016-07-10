@@ -16,6 +16,6 @@ res(5) = x(6); % res(5)=p
 res(6) = 2*a*F_y_f*(1/I)-2*b*F_y_r*(1/I); % res(6)=p'
 res(7) = x(2)*cos(x(5))-x(4)*sin(x(5)); % res(7)=X'
 res(8) = x(2)*sin(x(5))+x(4)*cos(x(5)); % res(8)=Y'
-% test
+
 end
 
