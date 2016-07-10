@@ -23,7 +23,6 @@ Y_value = xOld(8);
 
 % Initialization of car's geometrics
 m = pars.m; % 1000?
-%I = pars.I; % 300?
 g = pars.g; % 9.81?
 a = pars.a; % 1?
 b = pars.b; % 1?
