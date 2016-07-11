@@ -7,9 +7,9 @@ x0 = pars.x0;
 Ts = pars.Ts;
 
 k = 0;
-u = -20;
+u = -1;
 
-upper = 10000;
+upper = 50000;
 res_x = zeros(upper, 2);
 res_Dx = zeros(upper, 2);
 res_y = zeros(upper, 2);

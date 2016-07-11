@@ -21,11 +21,12 @@ Dp = xPrevious(6);
 X = xPrevious(7);
 Y = xPrevious(8);
 
+% Integration step of system plant
 tspan = [k*Ts,(k+1)*Ts];
 init = [x; Dx; y; Dy; p; Dp; X; Y];
 [tout, Yout] = ode45(@(t, x) dgl(t, x, [Dx, Dy, Dp], pars, u), tspan, init);
 
-% Update the working variables
+% Compute the next state of the plant for time step (k+1)*Ts
 x_values = Yout(:, 1);
 xNext(1) = x_values(end);
 Dx_values = Yout(:, 2);

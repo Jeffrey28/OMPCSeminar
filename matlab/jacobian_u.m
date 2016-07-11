@@ -1,6 +1,13 @@
 function [ res ] = jacobian_u( xSet, uSet, pars )
-%UNTITLED2 Summary of this function goes here
-%   Detailed explanation goes here
+% JACOBIAN_U returns the derivative of the plant dynamics with respect to
+% the input vector (known as Jacobian)
+% INPUTS:
+%   xSet  : state values where to do linearization (Taylor expansion)
+%   uSet  : input values where to do linearization (Taylor expansion)
+%   pars: parameters of the plant model
+%
+% OUTPUT:
+%  result: Jacobian matrix
 
 % Initialization of working variables
 Dx = xSet(1);
