@@ -8,7 +8,7 @@ Ts = pars.Ts;
 
 k = 0;
 
-upper = 25000;
+upper = 10000;
 res_x = zeros(upper, 2);
 res_Dx = zeros(upper, 2);
 res_y = zeros(upper, 2);
