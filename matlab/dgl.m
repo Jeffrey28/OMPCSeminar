@@ -42,6 +42,9 @@ v_c_r = v_y_r*cosd(delta_r)-v_x_r*sind(delta_r);
 % Tire models by Pacejca
 % Web page: http://www-cdr.stanford.edu/dynamic/bywire/tires.pdf
 
+camber_f = 0;
+camber_r = 0;
+
 % Lateral force influencing the front axis of the car
 a1_c = -22.1;
 a2_c = 1011;
@@ -58,8 +61,8 @@ C_c_f = 1.3;
 D_c_f = a1_c*F_z_f^2+a2_c*F_z_f;
 B_c_f = (a3_c*sind(a4_c*atand(a5_c*F_z_f)))/(C_c_f*D_c_f);
 E_c_f = a6_c*F_z_f^2+a7_c*F_z_f+a8_c;
-Sh_c_f = a9_c*delta_f;
-Sv_c_f = (a10_c*F_z_f^2+a11_c*F_z_f)*delta_f;
+Sh_c_f = a9_c*camber_f;
+Sv_c_f = (a10_c*F_z_f^2+a11_c*F_z_f)*camber_f;
 slip_c_f = atand(v_c_f/v_l_f); % Slip angle depending on input steering angle
 phi_c_f = (1-E_c_f)*(slip_c_f+Sh_c_f)+atand(B_c_f*(slip_c_f+Sh_c_f))*(E_c_f/B_c_f);
 F_c_f = D_c_f*sind(C_c_f*atand(B_c_f*phi_c_f))+Sv_c_f; % Final force
@@ -69,8 +72,8 @@ C_c_r = 1.3;
 D_c_r = a1_c*F_z_r^2+a2_c*F_z_r;
 B_c_r = (a3_c*sind(a4_c*atand(a5_c*F_z_r)))/(C_c_r*D_c_r);
 E_c_r = a6_c*F_z_r^2+a7_c*F_z_r+a8_c;
-Sh_c_r = a9_c*delta_r;
-Sv_c_r = (a10_c*F_z_r^2+a11_c*F_z_r)*delta_r;
+Sh_c_r = a9_c*camber_r;
+Sv_c_r = (a10_c*F_z_r^2+a11_c*F_z_r)*camber_r;
 slip_c_r = atand(v_c_r/v_l_r); % Slip angle depending on input steering angle
 phi_c_r = (1-E_c_r)*(slip_c_r+Sh_c_r)+atand(B_c_r*(slip_c_r+Sh_c_r))*(E_c_r/B_c_r);
 F_c_r = D_c_r*sind(C_c_r*atand(B_c_r*phi_c_r))+Sv_c_r; % Final force
@@ -88,7 +91,12 @@ C_l_f = 1.65;
 D_l_f = a1_l*F_z_f^2+a2_l*F_z_f;
 B_l_f = (a3_l*F_z_f^2+a4_l*F_z_f)/(exp(a5_l*F_z_f)*C_l_f*D_l_f);
 E_l_f = a6_l*F_z_f^2+a7_l*F_z_f+a8_l;
-slip_l_f = atand(v_c_f/v_l_f); % Slip angle depending on input steering angle
+%slip_l_f = atand(v_c_f/v_l_f); % Slip angle depending on input steering angle
+if v_l_f > 5
+    slip_l_f = (5 / v_l_f) - 1;
+else
+    slip_l_f = 1 - (v_l_f / 5);
+end
 %disp(slip_l_f);
 phi_l_f = (1-E_l_f)*slip_l_f+atand(B_l_f*slip_l_f*(E_l_f/B_l_f));
 F_l_f = D_l_f*sind(C_l_f*atand(B_l_f*phi_l_f)); % Final force
@@ -98,7 +106,12 @@ C_l_r = 1.65;
 D_l_r = a1_l*F_z_r^2+a2_l*F_z_r;
 B_l_r = (a3_l*F_z_r^2+a4_l*F_z_r)/(exp(a5_l*F_z_r)*C_c_r*D_l_r);
 E_l_r = a6_l*F_z_r^2+a7_l*F_z_r+a8_l;
-slip_l_r = atand(v_c_r/v_l_r); % Slip angle depending on input steering angle
+%slip_l_r = atand(v_c_r/v_l_r); % Slip angle depending on input steering angle
+if v_l_r > 5
+    slip_l_r = (5 / v_l_r) - 1;
+else
+    slip_l_r = 1 - (v_l_r / 5);
+end
 phi_l_r = (1-E_l_r)*slip_l_r+atand(B_l_r*slip_l_r*(E_l_r/B_l_r));
 F_l_r = D_l_r*sind(C_l_r*atand(B_l_r*phi_l_r)); % Final force
 
