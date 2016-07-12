@@ -22,8 +22,8 @@ b = pars.b;
 I = pars.I;
 
 % Nominal forces F_z on front (_f) and rear (_r) wheels
-F_z_f = (b*m*g) / (2*(a+b));
-F_z_r = (a*m*g) / (2*(a+b));
+F_z_f = ((b*m*g) / (2*(a+b)))/1000; 
+F_z_r = ((a*m*g) / (2*(a+b)))/1000;
 
 delta_f = u; % Front axis steering angle in degrees
 delta_r = 0; % Rear axis steering angle in degrees
@@ -89,6 +89,7 @@ D_l_f = a1_l*F_z_f^2+a2_l*F_z_f;
 B_l_f = (a3_l*F_z_f^2+a4_l*F_z_f)/(exp(a5_l*F_z_f)*C_l_f*D_l_f);
 E_l_f = a6_l*F_z_f^2+a7_l*F_z_f+a8_l;
 slip_l_f = atand(v_c_f/v_l_f); % Slip angle depending on input steering angle
+%disp(slip_l_f);
 phi_l_f = (1-E_l_f)*slip_l_f+atand(B_l_f*slip_l_f*(E_l_f/B_l_f));
 F_l_f = D_l_f*sind(C_l_f*atand(B_l_f*phi_l_f)); % Final force
 
