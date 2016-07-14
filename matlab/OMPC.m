@@ -1,4 +1,4 @@
-function [ u ] = NLMPC( xHat, Ts, flag )
+function [ u ] = OMPC( xHat, Ts, flag )
 %OMPC calculates optimal contols based on a state estimate xHat.
 % INPUTS:
 %   xHat: estimated state of the plant
