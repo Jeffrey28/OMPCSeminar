@@ -13,8 +13,8 @@ function [ y ] = plant_output( x, u, Ts, k, pars)
 
 % Get ideal measurements
 yExact = zeros(2,1);
-yExact(1) = x(5); % p
-yExact(2) = x(8); % Y
+yExact(1) = x(3); % p
+yExact(2) = x(6); % Y
 
 % Add noise to ideal measurement
 mu1 = 0;
