@@ -1,4 +1,4 @@
-function [ result ] = dgl( t, x, xPrevious, pars, u )
+function [ result ] = dgl( t, x, pars, u )
 %DGL returns the solution for the next plant state [x,Dx,y,Dy,p,Dp,X,Y]
 % INPUTS:
 %   t  : time
@@ -10,10 +10,6 @@ function [ result ] = dgl( t, x, xPrevious, pars, u )
 % OUTPUTS:
 %  result: left side of plant ODE
 
-Dx_value = xPrevious(1);
-Dy_value = xPrevious(2);
-Dp_value = xPrevious(3);
-
 % Initialization of car's geometrics
 m = pars.m;
 g = pars.g;
@@ -24,123 +20,62 @@ r = pars.r;
 omega = pars.omega;
 
 % Nominal forces F_z on front (_f) and rear (_r) wheels
-F_z_f = ((b*m*g) / (2*(a+b)))/1000; 
-F_z_r = ((a*m*g) / (2*(a+b)))/1000;
+F_z_f = (b*m*g) / (2000 * (a+b));
+F_z_r = (a*m*g) / (2000 * (a+b));
 
 delta_f = u; % Front axis steering angle in degrees
 delta_r = 0; % Rear axis steering angle in degrees
 
 % Wheel's equations update for x-direction (_x) and y-direction (_y)
-v_y_f = Dy_value+a*Dp_value;
-v_y_r = Dy_value-b*Dp_value;
-v_x_f = Dx_value;
-v_x_r = Dx_value;
+v_y_f = x(2) + a * x(4);
+v_y_r = x(2) - b * x(4);
+v_x_f = x(1);
+v_x_r = x(1);
 
-v_l_f = v_y_f*sind(delta_f)+v_x_f*cosd(delta_f);
-v_l_r = v_y_r*sind(delta_r)+v_x_r*cosd(delta_r);
-v_c_f = v_y_f*cosd(delta_f)-v_x_f*sind(delta_f);
-v_c_r = v_y_r*cosd(delta_r)-v_x_r*sind(delta_r);
+v_l_f = v_y_f * sind(delta_f) + v_x_f * cosd(delta_f);
+v_l_r = v_y_r * sind(delta_r) + v_x_r * cosd(delta_r);
+v_c_f = v_y_f * cosd(delta_f) - v_x_f * sind(delta_f);
+v_c_r = v_y_r * cosd(delta_r) - v_x_r * sind(delta_r);
 
-% % Tire models by Pacejka
-% % Web page: http://www-cdr.stanford.edu/dynamic/bywire/tires.pdf
-% 
-% camber_f = 0;
-% camber_r = 0;
-% 
-v_wheel = r*omega;
-% 
-% % Lateral force influencing the front axis of the car
-% a1_c = -22.1;
-% a2_c = 1011;
-% a3_c = 1078;
-% a4_c = 1.82;
-% a5_c = 0.208;
-% a6_c = 0.000;
-% a7_c = -0.354;
-% a8_c = 0.707;
-% a9_c = 0.028;
-% a10_c = 0.000;
-% a11_c = 14.8;
-% C_c_f = 1.3;
-% D_c_f = a1_c*F_z_f^2+a2_c*F_z_f;
-% B_c_f = (a3_c*sind(a4_c*atand(a5_c*F_z_f)))/(C_c_f*D_c_f);
-% E_c_f = a6_c*F_z_f^2+a7_c*F_z_f+a8_c;
-% Sh_c_f = a9_c*camber_f;
-% Sv_c_f = (a10_c*F_z_f^2+a11_c*F_z_f)*camber_f;
-% slip_c_f = atand(v_c_f/v_l_f); % Slip angle depending on input steering angle
-% phi_c_f = (1-E_c_f)*(slip_c_f+Sh_c_f)+atand(B_c_f*(slip_c_f+Sh_c_f))*(E_c_f/B_c_f);
-% F_c_f = D_c_f*sind(C_c_f*atand(B_c_f*phi_c_f))+Sv_c_f; % Final force
-% 
-% % Lateral force influencing the rear axis of the car
-% C_c_r = 1.3;
-% D_c_r = a1_c*F_z_r^2+a2_c*F_z_r;
-% B_c_r = (a3_c*sind(a4_c*atand(a5_c*F_z_r)))/(C_c_r*D_c_r);
-% E_c_r = a6_c*F_z_r^2+a7_c*F_z_r+a8_c;
-% Sh_c_r = a9_c*camber_r;
-% Sv_c_r = (a10_c*F_z_r^2+a11_c*F_z_r)*camber_r;
-% slip_c_r = atand(v_c_r/v_l_r); % Slip angle depending on input steering angle
-% phi_c_r = (1-E_c_r)*(slip_c_r+Sh_c_r)+atand(B_c_r*(slip_c_r+Sh_c_r))*(E_c_r/B_c_r);
-% F_c_r = D_c_r*sind(C_c_r*atand(B_c_r*phi_c_r))+Sv_c_r; % Final force
-% 
-% % Longitudinal force influencing the front axis of the car
-% a1_l = 21.3;
-% a2_l = 1144;
-% a3_l = 49.6;
-% a4_l = 226;
-% a5_l = 0.069;
-% a6_l = -0.006;
-% a7_l = 0.056;
-% a8_l = 0.486;
-% C_l_f = 1.65;
-% D_l_f = a1_l*F_z_f^2+a2_l*F_z_f;
-% B_l_f = (a3_l*F_z_f^2+a4_l*F_z_f)/(exp(a5_l*F_z_f)*C_l_f*D_l_f);
-% E_l_f = a6_l*F_z_f^2+a7_l*F_z_f+a8_l;
-% %slip_l_f = atand(v_c_f/v_l_f); % Slip angle depending on input steering angle
-if v_l_f > (v_wheel)
-    slip_l_f = (v_wheel / v_l_f) - 1;
+% Tire models by Pacejka
+mu = 0;
+alpha_f = atan(v_c_f / v_l_f);
+alpha_r = atan(v_c_r / v_l_r);
+v_wheel = r * omega;
+
+if v_l_f > v_wheel
+    slip_f = (v_wheel / v_l_f) - 1;
 else
-    slip_l_f = 1 - (v_l_f / v_wheel);
+    slip_f = 1 - (v_l_f / v_wheel);
 end
 % disp(slip_l_f);
-% phi_l_f = (1-E_l_f)*slip_l_f+atand(B_l_f*slip_l_f)*(E_l_f/B_l_f);
-% F_l_f = D_l_f*sind(C_l_f*atand(B_l_f*phi_l_f)); % Final force
-% 
-% % Longitudinal force influencing the rear axis of the car
-% C_l_r = 1.65;
-% D_l_r = a1_l*F_z_r^2+a2_l*F_z_r;
-% B_l_r = (a3_l*F_z_r^2+a4_l*F_z_r)/(exp(a5_l*F_z_r)*C_c_r*D_l_r);
-% E_l_r = a6_l*F_z_r^2+a7_l*F_z_r+a8_l;
-% %slip_l_r = atand(v_c_r/v_l_r); % Slip angle depending on input steering angle
+
 if v_l_r > v_wheel
-    slip_l_r = (v_wheel / v_l_r) - 1;
+    slip_r = (v_wheel / v_l_r) - 1;
 else
-    slip_l_r = 1 - (v_l_r / v_wheel);
+    slip_r = 1 - (v_l_r / v_wheel);
 end
 % disp(slip_l_r);
-% phi_l_r = (1-E_l_r)*slip_l_r+atand(B_l_r*slip_l_r) *(E_l_r/B_l_r);
-% F_l_r = D_l_r*sind(C_l_r*atand(B_l_r*phi_l_r)); % Final force
 
-[F_l_f, F_c_f] = Pacejka(atan(v_c_f / v_l_f), slip_l_f, 0, F_z_f);
-[F_l_r, F_c_r] = Pacejka(atan(v_c_r / v_l_r), slip_l_r, 0, F_z_r);
-% [F_l_f, F_c_f] = PacejkaD(atand(v_c_f / v_l_f), slip_l_f, 0, F_z_f);
-% [F_l_r, F_c_r] = PacejkaD(atand(v_c_r / v_l_r), slip_l_r, 0, F_z_r);
+[F_l_f, F_c_f] = Pacejka(alpha_f, slip_f, mu, F_z_f);
+[F_l_r, F_c_r] = Pacejka(alpha_r, slip_r, mu, F_z_r);
+% [F_l_f, F_c_f] = PacejkaD(atand(v_c_f / v_l_f), slip_f, 0, F_z_f);
+% [F_l_r, F_c_r] = PacejkaD(atand(v_c_r / v_l_r), slip_r, 0, F_z_r);
 
 % Complete force formulas
-F_x_f = F_l_f*cosd(delta_f)-F_c_f*sind(delta_f);
-F_x_r = F_l_r*cosd(delta_r)-F_c_r*sind(delta_r);
-F_y_f = F_l_f*sind(delta_f)+F_c_f*cosd(delta_f);
-F_y_r = F_l_r*sind(delta_r)+F_c_r*cosd(delta_r);
+F_x_f = F_l_f * cosd(delta_f) - F_c_f * sind(delta_f);
+F_x_r = F_l_r * cosd(delta_r) - F_c_r * sind(delta_r);
+F_y_f = F_l_f * sind(delta_f) + F_c_f * cosd(delta_f);
+F_y_r = F_l_r * sind(delta_r) + F_c_r * cosd(delta_r);
 
 % Physical system dynamics as 1.st order ODE
 result = zeros(6, 1);
-%result(1) = x(2); % res(1)=x'
-result(1) = x(2) * x(4) + 2 * F_x_f * (1 / m) + 2 * F_x_r * (1 / m); % res(2)=x''
-%result(3) = x(4); % res(3)=y'
-result(2) = -x(1) * x(4) + 2 * F_y_f * (1 / m) + 2 * F_y_r * (1 / m); % res(4)=y''
-result(3) = x(4); % res(5)=p
-result(4) = 2 * a * F_y_f * (1 / I) - 2 * b * F_y_r * (1 / I); % res(6)=p'
-result(5) = x(1) * cos(x(3)) - x(2) * sin(x(3)); % res(7)=X'
-result(6) = x(1) * sin(x(3)) + x(2) * cos(x(3)); % res(8)=Y'
+result(1) = x(2) * x(4) + 2 * F_x_f * (1 / m) + 2 * F_x_r * (1 / m); % res(1)=x''
+result(2) = -x(1) * x(4) + 2 * F_y_f * (1 / m) + 2 * F_y_r * (1 / m); % res(2)=y''
+result(3) = x(4); % res(3)=p'
+result(4) = 2 * a * F_y_f * (1 / I) - 2 * b * F_y_r * (1 / I); % res(4)=p''
+result(5) = x(1) * cos(x(3)) - x(2) * sin(x(3)); % res(5)=X'
+result(6) = x(1) * sin(x(3)) + x(2) * cos(x(3)); % res(6)=Y'
 
 end
 

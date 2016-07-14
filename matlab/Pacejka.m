@@ -1,5 +1,6 @@
 function [ Fl, Fc ] = Pacejka( alpha, s, mu, Fz )
 %Pacejka tyre model
+% Web page: http://www-cdr.stanford.edu/dynamic/bywire/tires.pdf
 % INPUTS:
 %   alpha   : current lateral slip angle in radian
 %   s       : current longitudial slip ratio
