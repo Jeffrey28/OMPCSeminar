@@ -111,10 +111,11 @@ J=0;
 g=[];
 
 %% TODO: Linearize around x(j) and u(j-1) (Actually: x(j) and u(j))
-xSet = RK4(X, u(1)); % The state where we linearize
-uSet = u(1); % The input where we linearize
+%xSet = RK4(X, u(1)); % The state where we linearize
+xSet = X; % The state where we linearize
+uSet = 0; % The input where we linearize
 for j=1:Np
-% Linearization of RK4 around actual state x(j) and input u(j-1) (Taylor)
+% Update the actual point where we are
 xActual = X;
 uActual = u(j);
 
@@ -123,7 +124,11 @@ jacobi_x = jacobian(RK4(xActual, uActual), xi);
 jacobi_u = jacobian(RK4(xActual, uActual), ui);
 X = RK4(xSet, uSet) + jacobi_x * (xActual - xSet) + jacobi_u * (uActual - uSet);
 
-J = J + 7500 * X(6)^2;
+%J = J + 500 * X(3)^2;
+%     %J = J + 75 * (X(6) - 0.5)^2;
+%     J = J + 750 * X(6)^2;
+%     J = J + (150 * pi / 180) * (u(i-1) - u(i))^2;
+J = J + 750 * X(6)^2;
 J = J + (150 * pi / 180) * (u(i-1) - u(i))^2;
 end
 
