@@ -48,14 +48,16 @@ if v_l_f > v_wheel
 else
     slip_f = 1 - (v_l_f / v_wheel);
 end
-% disp(slip_l_f);
+% disp(slip_f);
 
 if v_l_r > v_wheel
     slip_r = (v_wheel / v_l_r) - 1;
 else
     slip_r = 1 - (v_l_r / v_wheel);
 end
-% disp(slip_l_r);
+% disp(slip_r);
+slip_f = 0;
+slip_r = 0;
 
 [F_l_f, F_c_f] = Pacejka(alpha_f, slip_f, mu, F_z_f);
 [F_l_r, F_c_r] = Pacejka(alpha_r, slip_r, mu, F_z_r);

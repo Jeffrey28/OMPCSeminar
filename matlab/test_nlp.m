@@ -2,7 +2,7 @@ clear all;
 
 import casadi.*;
 
-Ts = 0.01;
+Ts = 0.05;
 
 Np = 10;    %Prediction horizon
 Nc = 8;     %Control horizon
@@ -59,7 +59,7 @@ Fz_f = b * m * g / (2000 * (a + b));
 Fz_r = a * m * g / (2000 * (a + b));
 
 % Use friction model to determine F[l/r]_[f/r]
-mu = 1;
+mu = 0;
 [Fl_f, Fc_f] = Pacejka(alpha_f, s_f, mu, Fz_f);
 [Fl_r, Fc_r] = Pacejka(alpha_r, s_r, mu, Fz_r);
 
@@ -73,9 +73,9 @@ Fy_r = Fc_r;                            % rear steering angle = 0 --> simplifica
 %Fy_r = Fl_r * sin(delta_r) + Fc_r * cos(delta_r);
 
 xdot = [xi(2) * xi(4) + (2 / m) * (Fx_f + Fx_r);
-        xi(1) * xi(4) + (2 / m) * (Fy_f + Fy_r);
+        -xi(1) * xi(4) + (2 / m) * (Fy_f + Fy_r);
         xi(4);
-        (2 / I) * (a * Fy_f + b * Fy_r);
+        (2 / I) * (a * Fy_f - b * Fy_r);
         xi(1) * cos(xi(3)) - xi(2) * sin(xi(3));
         xi(1) * sin(xi(3)) + xi(2) * cos(xi(3))];
 
@@ -84,7 +84,7 @@ xdot = [xi(2) * xi(4) + (2 / m) * (Fx_f + Fx_r);
 f = Function('f', {xi, u}, {xdot});
 
 % RK4 integrator
-Mrk = 4;
+Mrk = 20;
 U   = MX.sym('U');
 X0  = MX.sym('X0', nx);
 X = X0;
@@ -92,10 +92,10 @@ DT = Ts / Mrk;
 
 for i=1:Mrk
     k1 = f(X, U);
-    k2 = f(X + Ts * k1 / 2, U);
-    k3 = f(X + Ts * k2 / 2, U);
-    k4 = f(X + Ts * k3, U);
-    X   = X + (Ts / 6) * (k1 + 2*k2 + 2*k3 + k4);
+    k2 = f(X + DT * k1 / 2, U);
+    k3 = f(X + DT * k2 / 2, U);
+    k4 = f(X + DT * k3, U);
+    X   = X + (DT / 6) * (k1 + 2*k2 + 2*k3 + k4);
 end
 
 RK4 = Function('RK4', {X0, U}, {X});
@@ -104,7 +104,7 @@ RK4 = Function('RK4', {X0, U}, {X});
 % Formulate NLP
 u = SX.sym('u',Np);
 
-x_0 = [5;0;0;0;0;0];
+x_0 = [5;0;0;0;0;1];
 X = x_0;
 
 % Objective function
@@ -115,63 +115,67 @@ for i = 1:Np
     % 1 - get x_next using RK4
     % 2 - J = J + ...
     X = RK4(X, u(i));
-    J = J + X(3)^2 + X(5)^2 + u(i)^2;
+    J = J + X(3)^2 + X(6)^2;% + u(i)^2;
 end
 
-testN = 1000;
-
-x_test = zeros(testN);
-y_test = zeros(testN);
-
-Fk = x_0;
-for i=1:testN
-    Fk = RK4(Fk, 1);
-    Fk = full(Fk);
-    x_test(i) = Fk(5);
-    y_test(i) = Fk(6);
-end
-disp([x_test(1), y_test(1)]);
-disp([x_test(testN), y_test(testN)]);
-
-plot(x_test, y_test);
-
-
-% % Terminal constraints: x_0(T)=x_1(T)=0
-% %g = [g; X];
+% testN = 5000;
 % 
-% % Allocate an NLP solver
-% nlp = struct('x', u, 'f', J, 'g', g);
+% x_test = zeros(testN);
+% y_test = zeros(testN);
 % 
-% % Create IPOPT solver object
-% options = struct;
-% %options.hessian_approximation = 'limited-memory';
-% solver = nlpsol('solver', 'ipopt', nlp);
-% 
-% % arg = struct;
-% % % YOUR CODE HERE: upper and lower bounds on x and g(x)
-% % arg.x0  =  zeros(1, Np);        % solution guess
-% % arg.lbx =  -inf;       % lower bound on x
-% % arg.ubx =  inf;       % upper bound on x
-% % % arg.lbg =  [];       % lower bound on g
-% % % arg.ubg =  [];       % upper bound on g
-% 
-% w0 = [];
-% lbw = [];
-% ubw = [];
-% 
-% for i=1:Np
-%     w0 = [w0, 10];
-%     lbw = [lbw, -inf];
-%     ubw = [ubw, inf];
+% Fk = x_0;
+% myU = -10;
+% for i=0:testN-1
+%     Fk = RK4(Fk, myU);
+%     Fk = full(Fk);
+%     x_test(i+1) = Fk(5);
+%     y_test(i+1) = Fk(6);
+%     if i==testN/2
+%        myU = -5; 
+%     end
 % end
+% disp([x_test(1), y_test(1)]);
+% disp([x_test(testN), y_test(testN)]);
 % 
-% %% Solve the NLP
-% res = solver('x0', w0, 'lbx', lbw, 'ubx', ubw);
-% 
-% f_opt       = full(res.f);
-% u_opt       = full(res.x);
-% 
-% plot(u_opt);
+% plot(x_test, y_test); hold on;
+
+
+% Terminal constraints: x_0(T)=x_1(T)=0
+%g = [g; X];
+
+% Allocate an NLP solver
+nlp = struct('x', u, 'f', J, 'g', g);
+
+% Create IPOPT solver object
+options = struct;
+%options.hessian_approximation = 'limited-memory';
+solver = nlpsol('solver', 'ipopt', nlp);
+
+% arg = struct;
+% % YOUR CODE HERE: upper and lower bounds on x and g(x)
+% arg.x0  =  zeros(1, Np);        % solution guess
+% arg.lbx =  -inf;       % lower bound on x
+% arg.ubx =  inf;       % upper bound on x
+% % arg.lbg =  [];       % lower bound on g
+% % arg.ubg =  [];       % upper bound on g
+
+w0 = [];
+lbw = [];
+ubw = [];
+
+for i=1:Np
+    w0 = [w0, 5];
+    lbw = [lbw, -10];
+    ubw = [ubw, 10];
+end
+
+%% Solve the NLP
+res = solver('x0', w0, 'lbx', lbw, 'ubx', ubw);
+
+f_opt       = full(res.f);
+u_opt       = full(res.x);
+
+plot(u_opt);
 
 
 
