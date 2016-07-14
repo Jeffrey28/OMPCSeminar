@@ -4,7 +4,7 @@ import casadi.*;
 
 Ts = 0.05;
 
-Np = 10;    %Prediction horizon
+Np = 25;    %Prediction horizon
 Nc = 8;     %Control horizon
 nx = 6;     %State dimension
 nu = 1;     %Control dimension
@@ -104,18 +104,22 @@ RK4 = Function('RK4', {X0, U}, {X});
 % Formulate NLP
 u = SX.sym('u',Np);
 
-x_0 = [5;0;0;0;0;1];
+x_0 = [5;0;0;0;0;0.1];
 X = x_0;
 
 % Objective function
 J=0;
 g=[];
-for i = 1:Np
+X = RK4(X, u(1));
+for i = 2:Np
     % build the cost of the NLP
     % 1 - get x_next using RK4
     % 2 - J = J + ...
     X = RK4(X, u(i));
-    J = J + X(3)^2 + X(6)^2;% + u(i)^2;
+    %J = J + 500 * X(3)^2;
+    %J = J + 75 * (X(6) - 0.5)^2;
+    J = J + 750 * X(6)^2;
+    J = J + (150 * pi / 180) * (u(i-1) - u(i))^2;
 end
 
 % testN = 5000;
@@ -175,7 +179,27 @@ res = solver('x0', w0, 'lbx', lbw, 'ubx', ubw);
 f_opt       = full(res.f);
 u_opt       = full(res.x);
 
-plot(u_opt);
+xNext = x_0;
+pars = plant_init();
+
+for k=0:Np-1
+    xNext = plant_step(xNext, u_opt(k+1), Ts, k, pars);
+    res1(k+1, :) = xNext;
+    %disp(xNext);
+end
+
+res_Dx = res1(:, 1);
+res_Dy = res1(:, 2);
+res_p = res1(:, 3);
+res_Dp = res1(:, 4);
+res_X = res1(:, 5);
+res_Y = res1(:, 6);
+
+
+% Plot results
+plot(u_opt); hold on;
+plot(res_X, res_Y); hold on;
+axis equal;
 
 
 
