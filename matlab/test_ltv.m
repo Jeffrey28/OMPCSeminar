@@ -4,7 +4,7 @@ import casadi.*;
 
 Ts = 0.05;
 
-Np = 12;    %Prediction horizon
+Np = 6;    %Prediction horizon
 Nc = 10;     %Control horizon
 nx = 6;     %State dimension
 nu = 1;     %Control dimension
@@ -62,7 +62,7 @@ xdot = [xi(2) * xi(4) + (2 / m) * (Fx_f + Fx_r);
 f = Function('f', {xi, ui}, {xdot});
 
 % RK4 integrator
-Mrk = 20;
+Mrk = 10;
 U   = MX.sym('U');
 X0  = MX.sym('X0', nx);
 X = X0;
@@ -77,53 +77,91 @@ for i=1:Mrk
 end
 
 RK4 = Function('RK4', {X0, U}, {X});
-% Formulate NLP
-u = SX.sym('ud',Np);
 
-x_0 = [5;0;0;0;0;0.1];
+% dk1_x = jacobian(k1, X0);
+% dk2_x = jacobian(k2, X0);
+% dk3_x = jacobian(k3, X0);
+% dk4_x = jacobian(k4, X0);
+% 
+% dk1_x_F = Function('dk1_x',{X0, U}, {dk1_x});
+% dk2_x_F = Function('dk2_x',{X0, U}, {dk2_x});
+% dk3_x_F = Function('dk3_x',{X0, U}, {dk3_x});
+% dk4_x_F = Function('dk4_x',{X0, U}, {dk4_x});
+% 
+% dk1_u = jacobian(k1, U);
+% dk2_u = jacobian(k2, U);
+% dk3_u = jacobian(k3, U);
+% dk4_u = jacobian(k4, U);
+% 
+% dk1_u_F = Function('dk1_u',{X0, U}, {dk1_u});
+% dk2_u_F = Function('dk2_u',{X0, U}, {dk2_u});
+% dk3_u_F = Function('dk3_u',{X0, U}, {dk3_u});
+% dk4_u_F = Function('dk4_u',{X0, U}, {dk4_u});
+% 
+% dg_x = eye(6) + (DT / 6) * (dk1_x + 2 * dk2_x + 2 * dk3_x + dk4_x);
+% dg_u = (DT / 6) * (dk1_u + 2 * dk2_u+ 2 * dk3_u + dk4_u);
+% 
+% dg_x_F = Function('dg_x', {X0, U}, {dg_x});
+% dg_u_F = Function('dg_u', {X0, U}, {dg_u});
+% 
+% xSet = X;
+% uSet = 1;
+% 
+% JacX = jacobian(X, X0);
+% JacXF = Function('XF',{X0, U}, {JacX});
+% JacU = jacobian(X, U);
+% JacXU = Function('XF',{X0, U}, {JacU});
+% %disp(JacXF(xSet, uSet));
+% disp(JacXU(xSet, uSet));
+% disp(dg_u_F(xSet, uSet));
+% %disp(dg_x_F(xSet, uSet));
+
+% for k = 1 : Np
+%   % X = RK4(xSet, uSet) + dg_u_F(xSet, uSet) * (X - xSet) + dg_x_F(xSet, uSet) * (u(k) - uSet);
+%    X = RK4(xSet, uSet) + dg_x_F(xSet, uSet) * (X - xSet) + dg_u_F(xSet, uSet) * (u(k) - uSet); 
+%    J = J + 500*X(6)^2;
+%   % J = J + X(4)^2;
+%   % J = J + X(3)^2;
+%    if k == 1
+%        J = J + (500 * pi / 180) * (u(k)-uSet)^2;
+%    else
+%        J = J + (500 * pi / 180) * (u(k)-u(k-1))^2;
+%    end
+% end
+
+
+JacX = jacobian(X, X0);
+JacXF = Function('XF',{X0, U}, {JacX});
+JacU = jacobian(X, U);
+JacUF = Function('UF',{X0, U}, {JacU});
+
+% Formulate NLP
+u = SX.sym('u',Np);
+
+x_0 = [5;0;0;0;0;0.01];
 X = x_0;
 
 J = 0;
 g=[];
 
 % Linearization
+X = RK4(X, u(1));
 xSet = X;
-uSet = 0;
+uSet = u(1);
 offset = RK4(xSet, uSet);
-JacX = jacobian(xdot, xi);
-JacXF = Function('XF',{xi, ui}, {JacX});
-JacU = jacobian(xdot, ui);
-JacUF = Function('UF',{xi, ui}, {JacU});
-for k = 1 : Np
+
+for k = 2 : Np
    X = offset + JacXF(xSet, uSet) * (X - xSet) + JacUF(xSet, uSet) * (u(k) - uSet);
-  % disp(JacUF(xSet, uSet));
-   J = J + 175 * X(6)^2;
-   %J = J + 10 * X(4)^2;
-   %J = J + 20 * X(3)^2;
-   if k == 1
-       %J = J + (50000 * pi / 180) * (u(k)-uSet)^2;
-   else
-      % J = J + (50000 * pi / 180) * (u(k)-u(k-1))^2;
-   end
+   J = J + X(6)^2;
+%    J = J + X(4)^2;
+%    J = J + X(3)^2;
+%    if k == 1
+%        J = J + (500 * pi / 180) * (u(k))^2;
+%    else
+%        J = J + (500 * pi / 180) * (u(k))^2;
+%    end
 end
 
-uVar = MX.sym('uVar', nu);
-xVar = MX.sym('xVar', nx);
-
-%JacXi = jacobian(xdot, xi);
-% JacXiF = Function('j',{xi,u},{JacXi});
-% res = JacXiF([5;0;0;0;0;0],0);
-
-% % Linearization
-% xSet = [5;0;0;0;0;0]; % state where to linearize
-% uSet = 0; % input where to linearize
-% offset = RK4(xSet, uSet);
-
-%jacobi_x = eye(nx) + (DT / 6) * (jacobian(k1,xVar) + 2 * jacobian(k2,xVar) + 2 * jacobian(k3,xVar) + jacobian(k4,xVar));
-%jacobi_y = (DT / 6) * (jacobian(k1,uVar) + 2 * jacobian(k2,uVar) + 2 * jacobian(k3,uVar) + jacobian(k4,uVar));
-
-%xNext = offset + jacobi_x(xSet, uSet) * (X - xSet) + jacobi_u(xSet, uSet) * (u - uSet);
-
 % % Objective function
 % J=0;
 % g=[];
@@ -139,62 +177,6 @@ xVar = MX.sym('xVar', nx);
 %     J = J + (150 * pi / 180) * (u(i-1) - u(i))^2;
 % end
 
-
-% % Objective (by Dominique)
-% J=0;
-% g=[];
-% 
-% %% TODO: Linearize around x(j) and u(j-1) (Actually: x(j) and u(j))
-% %xSet = RK4(X, u(1)); % The state where we linearize
-% uOld = -0;
-% xSet = X; % The state where we linearize
-% uSet = uOld; % The input where we linearize
-% fSet = RK4(xSet, uSet);
-% jacobi_x = jacobian(fSet, xi);
-% jacobi_u = jacobian(fSet, ui);
-% 
-% tmp = jacobian(RK4(xi, ui));
-% 
-% for j=1:Np
-% % Update the actual point where we are
-% xActual = X;
-% if j == 1
-%     uActual = uOld + ud(1);
-% else
-%     uActual = uActual + ud(j);
-% end
-% 
-% % Compute the jacobians around xSet, uSet
-% X = fSet + jacobi_x * (xActual - xSet) + jacobi_u * (uActual - uSet);
-% 
-% %J = J + 500 * X(3)^2;
-% %     %J = J + 75 * (X(6) - 0.5)^2;
-% %     J = J + 750 * X(6)^2;
-% %     J = J + (150 * pi / 180) * (u(i-1) - u(i))^2;
-% J = J + 7500 * X(6)^2;
-% if j == 1
-%     J = J + (150 * pi / 180) * (ud(j))^2;
-% else
-%     J = J + (150 * pi / 180) * (ud(j))^2;
-% end
-% J = J + 500 * X(3)^2;
-% J = J + 10 * X(4)^2;
-% end
-
-% % Objective function
-% J=0;
-% g=[];
-% X = RK4(X, u(1));
-% for i = 2:Np
-%     % build the cost of the NLP
-%     % 1 - get x_next using RK4
-%     % 2 - J = J + ...
-%     X = RK4(X, u(i));
-%     %J = J + 500 * X(3)^2;
-%     %J = J + 75 * (X(6) - 0.5)^2;
-%     J = J + 750 * X(6)^2;
-%     J = J + (150 * pi / 180) * (u(i-1) - u(i))^2;
-% end
 
 % testN = 5000;
 % 
@@ -242,8 +224,8 @@ lbw = [];
 ubw = [];
 
 for i=1:Np
-    w0 = [w0, 5];
-    lbw = [lbw, -10];
+    w0 = [w0, 2];
+    lbw = [lbw, 10];
     ubw = [ubw, 10];
 end
 
@@ -271,6 +253,4 @@ res_Y = res1(:, 6);
 
 
 % Plot results
-plot(u_opt); hold on;
-plot(res_X, res_Y); hold on;
-axis equal;
+plot_result(u_opt,res1);
