@@ -21,5 +21,7 @@ function [ xHat, P ] = estimator( xHat, P, y, u,  Ts )
 %   xHat: current plant state estimate
 %   P   : covariance of current plant state estimate
 
+xHat = y;
+
 end
 

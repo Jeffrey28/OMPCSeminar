@@ -11,18 +11,20 @@ function [ y ] = plant_output( x, u, Ts, k, pars)
 % OUTPUTS:
 %  y    : output of the plant at step k.
 
-% Get ideal measurements
-yExact = zeros(2,1);
-yExact(1) = x(3); % p
-yExact(2) = x(6); % Y
+y = x;
 
-% Add noise to ideal measurement
-mu1 = 0;
-std1 = 0.5;
-mu2 = 0;
-std2 = 0.5;
-measurementNoise = [normrnd(mu1, std1); normrnd(mu2, std2)];
-y = yExact + measurementNoise;
+% % Get ideal measurements
+% yExact = zeros(2,1);
+% yExact(1) = x(3); % p
+% yExact(2) = x(6); % Y
+% 
+% % Add noise to ideal measurement
+% mu1 = 0;
+% std1 = 0.5;
+% mu2 = 0;
+% std2 = 0.5;
+% measurementNoise = [normrnd(mu1, std1); normrnd(mu2, std2)];
+% y = yExact + measurementNoise;
 
 end
 
