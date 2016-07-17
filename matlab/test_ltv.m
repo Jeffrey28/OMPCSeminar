@@ -5,7 +5,7 @@ import casadi.*;
 Ts = 0.05;
 
 Np = 25;    %Prediction horizon
-Nc = 10;    %Control horizon
+Nc = 25;    %Control horizon
 nx = 6;     %State dimension
 nu = 1;     %Control dimension
 
@@ -83,7 +83,7 @@ end
 
 RK4 = Function('RK4', {X0, U}, {X});
 
-X_0 = [5;0;0;0;0;0.2];
+X_0 = [5;0;0;0;0;0];
 U_init = 0;
 
 % Linearization
@@ -200,10 +200,17 @@ for k=0:Np
     alpha_rk_end = C_rear * Xk + D_rear * Uk;
     
   
-    J = J + 1000 * Xk_end(6) * Xk_end(6);
-    %J = J + 200 * Xk_end(3) * Xk_end(3);
-    %J = J + 10 * Xk_end(4) * Xk_end(4);
-    J = J + 10 * (pi / 180) * DUk * DUk;
+    %J = J + 1000 * Xk_end(6) * Xk_end(6);
+    %%J = J + 200 * Xk_end(3) * Xk_end(3);
+    %%J = J + 10 * Xk_end(4) * Xk_end(4);
+    %J = J + 10 * (pi / 180) * DUk * DUk;
+    
+    %J = J + 1750 * Xk_end(6) * Xk_end(6);
+    J = J + 75 * (Xk_end(6) - YTrajectory(Xk_end(5)))^2;
+    %J = J + 1750 * (Xk_end(6) - 1)^2;
+    J = J + 500 * (Xk_end(3) - PsiTrajectory(Xk_end(5)))^2;
+    %J = J + 500 * Xk_end(3) * Xk_end(3);
+    J = J + 150 * (pi / 180) * DUk * DUk;
 
     % New NLP variable for state at end of interval
     Xk = MX.sym(['X_' num2str(k+1)], 6);
