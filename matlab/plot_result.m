@@ -3,7 +3,7 @@ function [ ] = plot_result( u_opt, res )
 
 size = length(res(:, 1));
 
-figure;
+%figure;
 subplot(3,1,1);
 
 % Plot car XY-trajectory

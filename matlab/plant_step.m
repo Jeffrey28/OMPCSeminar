@@ -38,4 +38,6 @@ xNext(5) = X_values(end);
 Y_values = Yout(:, 6);
 xNext(6) = Y_values(end);
 
+xNext = xNext';
+
 end
