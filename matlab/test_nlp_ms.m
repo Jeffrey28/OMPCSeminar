@@ -4,8 +4,8 @@ import casadi.*;
 
 Ts = 0.05;
 
-Np = 25;    %Prediction horizon
-Nc = 25;     %Control horizon
+Np = 50;    %Prediction horizon
+Nc = 50;     %Control horizon
 nx = 6;     %State dimension
 nu = 1;     %Control dimension
 
@@ -93,7 +93,7 @@ end
 
 RK4 = Function('RK4', {X0, U}, {X});
 
-X_0 = [5;0;0;0;0;0.1];
+X_0 = [5;0;0;0;0;0];
 U_init = 0;
 
 
@@ -134,7 +134,7 @@ for k=0:Np
     end
 
     % Add action constraint
-    g = {g{:}, U_prev - (Uk + DUk)};
+    g = {g{:}, Uk - (U_prev + DUk)};
     lbg = [lbg; 0];
     ubg = [ubg; 0];
     U_prev = Uk;
@@ -143,7 +143,10 @@ for k=0:Np
     Xk_end = RK4(Xk, Uk);
     %Xk_end = Fk.xf;
     %J=J+Fk.qf;
-    J = J + 1750 * Xk_end(6) * Xk_end(6);
+    %J = J + 1750 * Xk_end(6) * Xk_end(6);
+    J = J + 75 * (Xk_end(6) - YTrajectory(Xk_end(5)))^2;
+    %J = J + 1750 * (Xk_end(6) - 1)^2;
+    J = J + 500 * (Xk_end(3) - PsiTrajectory(Xk_end(5)))^2;
     %J = J + 500 * Xk_end(3) * Xk_end(3);
     J = J + 150 * (pi / 180) * DUk * DUk;
 
@@ -161,13 +164,17 @@ for k=0:Np
 end
 
 % Create an NLP solver
+opts = struct();
+opts.ipopt.max_iter = 1000;
 prob = struct('f', J, 'x', vertcat(w{:}), 'g', vertcat(g{:}));
-solver = nlpsol('solver', 'ipopt', prob);
+solver = nlpsol('solver', 'ipopt', prob, opts);
 
 sol = solver('x0', w0, 'lbx', lbw, 'ubx', ubw, 'lbg', lbg, 'ubg', ubg);
 
 f_opt       = full(sol.f);
 u_opt       = full(sol.x);
+
+du_opt      = u_opt(9:8:end);
 u_opt       = u_opt(8:8:end);
 
 xNext = X_0;
