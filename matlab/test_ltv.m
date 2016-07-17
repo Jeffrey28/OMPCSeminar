@@ -4,8 +4,8 @@ import casadi.*;
 
 Ts = 0.05;
 
-Np = 50;    %Prediction horizon
-Nc = 50;     %Control horizon
+Np = 25;    %Prediction horizon
+Nc = 10;    %Control horizon
 nx = 6;     %State dimension
 nu = 1;     %Control dimension
 
@@ -16,8 +16,8 @@ m = 2050;
 I = 3344;
 g = 9.81;
 
-u = SX.sym('u', nu);
-xi = SX.sym('xi', nx);
+u = MX.sym('u', nu);
+xi = MX.sym('xi', nx);
 % xi:
 % xi(1) := x_dot
 % xi(2) := y_dot
@@ -39,10 +39,6 @@ vl_f = vy_f * sin(delta_f) + vx_f * cos(delta_f);   % u corresponds to front ste
 vc_f = vy_f * cos(delta_f) - vx_f * sin(delta_f);
 vl_r = vx_r; % rear steering angle = 0 --> simplification
 vc_r = vy_r;
-% vl_f = vy_f * sin(delta_f) + vx_f * cos(delta_f);
-% vc_f = vy_f * cos(delta_f) - vx_f * sin(delta_f);
-% vl_r = vy_r * sin(delta_r) + vx_r * cos(delta_r);
-% vc_r = vy_r * cos(delta_r) - vx_r * sin(delta_r);
 
 alpha_f = atan(vc_f / vl_f);
 alpha_r = atan(vc_r / vl_r);
@@ -60,10 +56,6 @@ Fx_f = Fl_f * cos(delta_f) - Fc_f * sin(delta_f);   % u corresponds to front ste
 Fy_f = Fl_f * sin(delta_f) + Fc_f * cos(delta_f);   % u corresponds to front steering angle
 Fx_r = Fl_r; % rear steering angle = 0 --> simplification
 Fy_r = Fc_r; % rear steering angle = 0 --> simplification
-%Fx_f = Fl_f * cos(delta_f) - Fc_f * sin(delta_f);
-%Fy_f = Fl_f * sin(delta_f) + Fc_f * cos(delta_f);
-%Fx_r = Fl_r * cos(delta_r) - Fc_r * sin(delta_r);
-%Fy_r = Fl_r * sin(delta_r) + Fc_r * cos(delta_r);
 
 xdot = [xi(2) * xi(4) + (2 / m) * (Fx_f + Fx_r);
         -xi(1) * xi(4) + (2 / m) * (Fy_f + Fy_r);
@@ -71,8 +63,6 @@ xdot = [xi(2) * xi(4) + (2 / m) * (Fx_f + Fx_r);
         (2 / I) * (a * Fy_f - b * Fy_r);
         xi(1) * cos(xi(3)) - xi(2) * sin(xi(3));
         xi(1) * sin(xi(3)) + xi(2) * cos(xi(3))];
-
-%l = ...        % Maybe add a cost function to RK4
 
 f = Function('f', {xi, u}, {xdot});
 
@@ -93,9 +83,8 @@ end
 
 RK4 = Function('RK4', {X0, U}, {X});
 
-X_0 = [5;0;0;0;0;1];
+X_0 = [5;0;0;0;0;0.2];
 U_init = 0;
-
 
 % Linearization
 
@@ -122,7 +111,7 @@ jacobiU_rear = jacobian(alpha_r, u);
 jacobiUF_rear = Function('jacobiUX', {xi, u}, {jacobiU_rear});
 C_rear = jacobiXF_rear(X_0, U_init);
 D_rear = jacobiUF_rear(X_0, U_init);
-%offset = RK4(X_0, U_init);
+offset = RK4(X_0, U_init);
 
 
 % Start with an empty NLP
@@ -143,32 +132,62 @@ lbw = [lbw; U_init; X_0];
 ubw = [ubw; U_init; X_0];
 w0 = [w0; U_init; X_0];
 
+epsilon = MX.sym('epsilon', 1);
+w = {w{:}, epsilon};
+lbw = [lbw; 0];
+ubw = [ubw; inf];
+w0 = [w0; 0];
+
+% Add penalty for slip angle constraint violation
+rho = 1000;
+J = J + rho * epsilon;
+
+alpha_min = -2.2 * (pi / 180);
+alpha_max = 2.2 * (pi / 180);
+
 % Formulate the NLP
 Xk = X0;
 for k=0:Np
     % New NLP variable for the control
     Uk = MX.sym(['U_' num2str(k)]);
     DUk = MX.sym(['DU_' num2str(k)]);
-    w = {w{:}, Uk, DUk};
+    alphaf_k = MX.sym(['alphaf_' num2str(k)]);
+    alphar_k = MX.sym(['alphar_' num2str(k)]);
+    w = {w{:}, Uk, DUk, alphaf_k, alphar_k};
     
     if k < Nc
-        lbw = [lbw; -10; -1.5];
-        ubw = [ubw;  10;  1.5];
-        w0 = [w0;  0;  0];
+        lbw = [lbw; -10; -0.85; alpha_min; alpha_min];
+        ubw = [ubw;  10;  0.85; alpha_max; alpha_max];
+        w0 = [w0;  0;  0; 0; 0];
     else
-        lbw = [lbw; -10; 0];
-        ubw = [ubw;  10; 0];
-        w0 = [w0;  0;  0];
+        lbw = [lbw; -10; 0; alpha_min; alpha_min];
+        ubw = [ubw;  10; 0; alpha_max; alpha_max];
+        w0 = [w0;  0;  0; 0; 0];
     end
 
     % Add action constraint
-    g = {g{:}, U_prev - (Uk + DUk)};
+    g = {g{:}, U_prev - Uk + DUk};
     lbg = [lbg; 0];
     ubg = [ubg; 0];
     U_prev = Uk;
     
-
-    % Integrate till the end of the interval
+    % Front
+    g = {g{:}, - alphaf_k + alpha_min - epsilon};
+    lbg = [lbg; -inf];
+    ubg = [ubg; 0];
+    
+    g = {g{:}, - alphaf_k + alpha_max + epsilon};
+    lbg = [lbg; 0];
+    ubg = [ubg; inf];
+    
+    % Rear
+    g = {g{:}, - alphar_k + alpha_min - epsilon};
+    lbg = [lbg; -inf];
+    ubg = [ubg; 0];
+    
+    g = {g{:}, - alphar_k + alpha_max + epsilon};
+    lbg = [lbg; 0];
+    ubg = [ubg; inf];
     
     % State linearization
     Xk_end = A * Xk + B * Uk;
@@ -180,12 +199,11 @@ for k=0:Np
     % Rear
     alpha_rk_end = C_rear * Xk + D_rear * Uk;
     
-    %Xk_end = Fk.xf;
-    %J=J+Fk.qf;
-    J = J + 1750 * Xk_end(6) * Xk_end(6);
-    %J = J + 500 * Xk_end(3) * Xk_end(3);
-    J = J + 150 * (pi / 180) * DUk * DUk;
-    %% TODO: Add soft-constraint for alpha %% 
+  
+    J = J + 1000 * Xk_end(6) * Xk_end(6);
+    %J = J + 200 * Xk_end(3) * Xk_end(3);
+    %J = J + 10 * Xk_end(4) * Xk_end(4);
+    J = J + 10 * (pi / 180) * DUk * DUk;
 
     % New NLP variable for state at end of interval
     Xk = MX.sym(['X_' num2str(k+1)], 6);
@@ -203,12 +221,13 @@ end
 % Create an NLP solver
 prob = struct('f', J, 'x', vertcat(w{:}), 'g', vertcat(g{:}));
 solver = nlpsol('solver', 'ipopt', prob);
+%solver = qpsol('solver', 'qpoases', prob);
 
 sol = solver('x0', w0, 'lbx', lbw, 'ubx', ubw, 'lbg', lbg, 'ubg', ubg);
 
 f_opt       = full(sol.f);
 u_opt       = full(sol.x);
-u_opt       = u_opt(8:8:end);
+u_opt       = u_opt(9:10:end);
 
 xNext = X_0;
 pars = plant_init();
@@ -216,7 +235,6 @@ pars = plant_init();
 for k=0:Np-1
     xNext = plant_step(xNext, u_opt(k+1), Ts, k, pars);
     res(k+1, :) = xNext;
-    %disp(xNext);
 end
 
 res_Dx = res(:, 1);
@@ -226,9 +244,4 @@ res_Dp = res(:, 4);
 res_X = res(:, 5);
 res_Y = res(:, 6);
 
-
-% % Plot results
-% plot(u_opt); hold on;
-% plot(res_X, res_Y); hold on;
-% axis equal;
 plot_result( u_opt, res );
