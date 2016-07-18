@@ -1,4 +1,4 @@
-function [ u ] = OMPC_nlp( xHat, last_U, Ts, RK4 )
+function [ u ] = OMPC_nlp( xHat, last_U, Ts, RK4, flag )
 %OMPC calculates optimal contols based on a state estimate xHat.
 % INPUTS:
 %   xHat: estimated state of the plant
@@ -9,11 +9,15 @@ function [ u ] = OMPC_nlp( xHat, last_U, Ts, RK4 )
 
 import casadi.*;
 
-Np = 7;    %Prediction horizon
-Nc = 3;     %Control horizon
+% Np = 7;    %Prediction horizon
+% Nc = 3;     %Control horizon
+Np = flag.Np;
+Nc = flag.Nc;
 
 X_0 = xHat;
-U_init = last_U;
+U_init = last_U(1);
+u_opt_prev = last_U;
+u_opt_prev = [u_opt_prev; u_opt_prev(end); u_opt_prev(end)];
 
 
 % Start with an empty NLP
@@ -45,12 +49,11 @@ for k=0:Np
     if k < Nc
         lbw = [lbw; -10; -1.5];
         ubw = [ubw;  10;  1.5];
-        w0 = [w0;  0;  0];
     else
         lbw = [lbw; -10; 0];
         ubw = [ubw;  10; 0];
-        w0 = [w0;  0;  0];
     end
+    w0 = [w0;  u_opt_prev(k+2);  (u_opt_prev(k+2) - u_opt_prev(k+1))];
 
     % Add action constraint
     g = {g{:}, Uk - (U_prev + DUk)};
@@ -95,6 +98,6 @@ u_opt       = full(sol.x);
 
 u_opt       = u_opt(8:8:end);
 
-u = u_opt(1);
+u = u_opt;
 end
 

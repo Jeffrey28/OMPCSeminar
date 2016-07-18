@@ -1,4 +1,4 @@
-function [ u ] = OMPC_ltv( xHat, prev_u, Ts, RK4 )
+function [ u ] = OMPC_ltv( xHat, prev_u, Ts, RK4, flag )
 %OMPC calculates optimal contols based on a state estimate xHat.
 % INPUTS:
 %   xHat: estimated state of the plant
@@ -9,115 +9,15 @@ function [ u ] = OMPC_ltv( xHat, prev_u, Ts, RK4 )
 
 import casadi.*;
 
-Np = 25;    %Prediction horizon
-Nc = 25;    %Control horizon
-% nx = 6;     %State dimension
-% nu = 1;     %Control dimension
-% 
-% % Parameter
-% a = 1;
-% b = 1;
-% m = 2050;
-% I = 3344;
-% g = 9.81;
-% 
-% u = MX.sym('u', nu);
-% xi = MX.sym('xi', nx);
-% % xi:
-% % xi(1) := x_dot
-% % xi(2) := y_dot
-% % xi(3) := psi
-% % xi(4) := psi_dot
-% % xi(5) := X
-% % xi(6) := Y
-% 
-% % System dynamics
-% delta_f = u * pi / 180;
-% delta_r = 0;
-% 
-% vx_f = xi(1);
-% vy_f = xi(2) + a * xi(4);
-% vx_r = xi(1);
-% vy_r = xi(2) - b * xi(4);
-% 
-% vl_f = vy_f * sin(delta_f) + vx_f * cos(delta_f);   % u corresponds to front steering angle
-% vc_f = vy_f * cos(delta_f) - vx_f * sin(delta_f);
-% vl_r = vx_r; % rear steering angle = 0 --> simplification
-% vc_r = vy_r;
-% 
-% alpha_f = atan(vc_f / vl_f);
-% alpha_r = atan(vc_r / vl_r);
-% s_f = 0; %TODO: Check how to implement if-else-condition
-% s_r = 0; %TODO: Check how to implement if-else-condition
-% Fz_f = b * m * g / (2000 * (a + b));
-% Fz_r = a * m * g / (2000 * (a + b));
-% 
-% % Use friction model to determine F[l/r]_[f/r]
-% mu = 0;
-% [Fl_f, Fc_f] = Pacejka(alpha_f, s_f, mu, Fz_f);
-% [Fl_r, Fc_r] = Pacejka(alpha_r, s_r, mu, Fz_r);
-% 
-% Fx_f = Fl_f * cos(delta_f) - Fc_f * sin(delta_f);   % u corresponds to front steering angle
-% Fy_f = Fl_f * sin(delta_f) + Fc_f * cos(delta_f);   % u corresponds to front steering angle
-% Fx_r = Fl_r; % rear steering angle = 0 --> simplification
-% Fy_r = Fc_r; % rear steering angle = 0 --> simplification
-% 
-% xdot = [xi(2) * xi(4) + (2 / m) * (Fx_f + Fx_r);
-%         -xi(1) * xi(4) + (2 / m) * (Fy_f + Fy_r);
-%         xi(4);
-%         (2 / I) * (a * Fy_f - b * Fy_r);
-%         xi(1) * cos(xi(3)) - xi(2) * sin(xi(3));
-%         xi(1) * sin(xi(3)) + xi(2) * cos(xi(3))];
-% 
-% f = Function('f', {xi, u}, {xdot});
-% 
-% % RK4 integrator
-% Mrk = 20;
-% U   = MX.sym('U');
-% X0  = MX.sym('X0', nx);
-% X = X0;
-% DT = Ts / Mrk;
-% 
-% for i=1:Mrk
-%     k1 = f(X, U);
-%     k2 = f(X + DT * k1 / 2, U);
-%     k3 = f(X + DT * k2 / 2, U);
-%     k4 = f(X + DT * k3, U);
-%     X   = X + (DT / 6) * (k1 + 2*k2 + 2*k3 + k4);
-% end
-% 
-% RK4 = Function('RK4', {X0, U}, {X});
-% 
-X_0 = xHat;
-U_init = prev_u;
-% 
-% % Linearization
-% 
-% % For state vector
-% jacobiX_state = jacobian(X, X0);
-% jacobiXF_state = Function('jacobiXF_state', {X0, U}, {jacobiX_state});
-% jacobiU_state = jacobian(X, U);
-% jacobiUF_state = Function('jacobiUF_state', {X0, U}, {jacobiU_state});
-% A = jacobiXF_state(X_0, U_init);
-% B = jacobiUF_state(X_0, U_init);
-% 
-% % For spip angle
-% % Front angle
-% jacobiX_front = jacobian(alpha_f, xi);
-% jacobiXF_front = Function('jacobiFX', {xi, u}, {jacobiX_front});
-% jacobiU_front = jacobian(alpha_f, u);
-% jacobiUF_front = Function('jacobiUX', {xi, u}, {jacobiU_front});
-% C_front = jacobiXF_front(X_0, U_init);
-% D_front = jacobiUF_front(X_0, U_init);
-% % Rear angle
-% jacobiX_rear = jacobian(alpha_r, xi);
-% jacobiXF_rear = Function('jacobiFX', {xi, u}, {jacobiX_rear});
-% jacobiU_rear = jacobian(alpha_r, u);
-% jacobiUF_rear = Function('jacobiUX', {xi, u}, {jacobiU_rear});
-% C_rear = jacobiXF_rear(X_0, U_init);
-% D_rear = jacobiUF_rear(X_0, U_init);
-% %offset = RK4(X_0, U_init);
+% Np = 25;    %Prediction horizon
+% Nc = 25;    %Control horizon
+Np = flag.Np;
+Nc = flag.Nc;
 
+X_0 = xHat;
+U_init = prev_u(1);
+u_opt_prev = prev_u;
+u_opt_prev = [u_opt_prev; u_opt_prev(end); u_opt_prev(end)];
 
 % For state vector
 A = RK4.JacX_s(X_0, U_init);
@@ -177,12 +77,11 @@ for k=0:Np
     if k < Nc
         lbw = [lbw; -10; -0.85; alpha_min; alpha_min];
         ubw = [ubw;  10;  0.85; alpha_max; alpha_max];
-        w0 = [w0;  0;  0; 0; 0];
     else
         lbw = [lbw; -10; 0; alpha_min; alpha_min];
         ubw = [ubw;  10; 0; alpha_max; alpha_max];
-        w0 = [w0;  0;  0; 0; 0];
     end
+    w0 = [w0;  u_opt_prev(k+2);  (u_opt_prev(k+2) - u_opt_prev(k+1)); 0; 0];
 
     % Add action constraint
     g = {g{:}, U_prev - Uk + DUk};
@@ -255,7 +154,7 @@ f_opt       = full(sol.f);
 u_opt       = full(sol.x);
 u_opt       = u_opt(9:10:end);
 
-u = u_opt(1); % TODO: solve some optimization problem to compute this
+u = u_opt; % TODO: solve some optimization problem to compute this
 
 end
 

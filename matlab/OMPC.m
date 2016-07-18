@@ -10,12 +10,12 @@ function [ u ] = OMPC( xHat, prev_u, Ts, RK4, flag )
 % OUTPUTS:
 %  u    : control inputs for the plant at step k+1.
 
-if flag == 1
+if flag.opt == 1
     disp('Solving MPC-problem as NLP');
-    u = OMPC_nlp(xHat, prev_u, Ts, RK4);
-elseif flag == 2
+    u = OMPC_nlp(xHat, prev_u, Ts, RK4, flag);
+elseif flag.opt == 2
     disp('Solving MPC-problem as LTV');
-    u = OMPC_ltv(xHat, prev_u, Ts, RK4);
+    u = OMPC_ltv(xHat, prev_u, Ts, RK4, flag);
 else
     disp('ERROR: Unknown controller in OMPC!');
 end
