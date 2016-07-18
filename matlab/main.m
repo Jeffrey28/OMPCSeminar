@@ -9,9 +9,8 @@ Ts = pars.Ts;
 flag.Np = 7;
 flag.Nc = 3;
 
-xHat = [5;0;0;0;0;0]; % TODO: Initial state guess (don't cheat and use x0 ;-P )
+xHat = pars.x0; % TODO: Initial state guess (don't cheat and use x0 ;-P )
 RK4 = RK4_fcn(20, Ts);
-u = 0;
 u_opt = zeros(flag.Np, 1);
 x = pars.x0;
 P = 0;
@@ -23,7 +22,9 @@ figure;
 
 tic
 
-while k < 500
+upper = 125 / (xHat(1)*Ts);
+
+while k < upper
     %% compute next controls
     u_opt = OMPC(xHat, u_opt, Ts, RK4, flag);
     u = u_opt(1);
@@ -54,7 +55,7 @@ time_nlp = toc;
 %% LTV Optimization
 k = 0;
 flag.opt = 2;
-xHat = [5;0;0;0;0;0];
+xHat = pars.x0;
 u = 0;
 u_opt = zeros(flag.Np, 1);
 x = pars.x0;
@@ -64,7 +65,7 @@ figure;
 
 tic
 
-while k < 500
+while k < upper
     %% compute next controls
     u_opt = OMPC(xHat, u_opt, Ts, RK4, flag);
     u = u_opt(1);

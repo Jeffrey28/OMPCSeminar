@@ -61,8 +61,13 @@ w0 = [w0; 0];
 rho = 1000;
 J = J + rho * epsilon;
 
+% Allowed ranges
 alpha_min = -2.2 * (pi / 180);
 alpha_max = 2.2 * (pi / 180);
+du_min = -1.5;
+du_max = 1.5;
+u_min = -10;
+u_max = 10;
 
 % Formulate the NLP
 Xk = X0;
@@ -75,11 +80,11 @@ for k=0:Np
     w = {w{:}, Uk, DUk, alphaf_k, alphar_k};
     
     if k < Nc
-        lbw = [lbw; -10; -0.85; alpha_min; alpha_min];
-        ubw = [ubw;  10;  0.85; alpha_max; alpha_max];
+        lbw = [lbw; u_min; du_min; alpha_min; alpha_min];
+        ubw = [ubw;  u_max;  du_max; alpha_max; alpha_max];
     else
-        lbw = [lbw; -10; 0; alpha_min; alpha_min];
-        ubw = [ubw;  10; 0; alpha_max; alpha_max];
+        lbw = [lbw; u_min; 0; alpha_min; alpha_min];
+        ubw = [ubw;  u_max; 0; alpha_max; alpha_max];
     end
     w0 = [w0;  u_opt_prev(k+2);  (u_opt_prev(k+2) - u_opt_prev(k+1)); 0; 0];
 

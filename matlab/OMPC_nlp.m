@@ -38,6 +38,11 @@ lbw = [lbw; U_init; X_0];
 ubw = [ubw; U_init; X_0];
 w0 = [w0; U_init; X_0];
 
+du_min = -1.5;
+du_max = 1.5;
+u_min = -10;
+u_max = 10;
+
 % Formulate the NLP
 Xk = X0;
 for k=0:Np
@@ -47,11 +52,11 @@ for k=0:Np
     w = {w{:}, Uk, DUk};
     
     if k < Nc
-        lbw = [lbw; -10; -1.5];
-        ubw = [ubw;  10;  1.5];
+        lbw = [lbw; u_min; du_min];
+        ubw = [ubw;  u_max;  du_max];
     else
-        lbw = [lbw; -10; 0];
-        ubw = [ubw;  10; 0];
+        lbw = [lbw; u_min; 0];
+        ubw = [ubw;  u_max; 0];
     end
     w0 = [w0;  u_opt_prev(k+2);  (u_opt_prev(k+2) - u_opt_prev(k+1))];
 
