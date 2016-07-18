@@ -21,23 +21,25 @@ nx = 6;     %State dimension
 nu = 1;     %Control dimension
 
 % Parameter
-a = 1;
-b = 1;
-m = 2050;
-I = 3344;
-g = 9.81;
+% a = 1;
+% b = 1;
+% m = 2050;
+% I = 3344;
+% g = 9.81;
 
-u = MX.sym('u', nu);
-xi = MX.sym('xi', nx);
+%u = MX.sym('u', nu);
+%xi = MX.sym('xi', nx);
+
+syms Dx Dy psi Dpsi X Y u a b m g I;
 
 % System dynamics
 delta_f = u * pi / 180;
 delta_r = 0;
 
-vx_f = xi(1);
-vy_f = xi(2) + a * xi(4);
-vx_r = xi(1);
-vy_r = xi(2) - b * xi(4);
+vx_f = Dx;
+vy_f = Dy + a * Dpsi;
+vx_r = Dx;
+vy_r = Dy - b * Dpsi;
 
 vl_f = vy_f * sin(delta_f) + vx_f * cos(delta_f);   % u corresponds to front steering angle
 vc_f = vy_f * cos(delta_f) - vx_f * sin(delta_f);
@@ -53,8 +55,8 @@ Fz_r = a * m * g / (2000 * (a + b));
 
 % Use friction model to determine F[l/r]_[f/r]
 mu = 0;
-[Fl_f, Fc_f] = Pacejka(alpha_f, s_f, mu, Fz_f);
-[Fl_r, Fc_r] = Pacejka(alpha_r, s_r, mu, Fz_r);
+[Fl_f, Fc_f] = PacejkaTest(alpha_f, s_f, mu, Fz_f);
+[Fl_r, Fc_r] = PacejkaTest(alpha_r, s_r, mu, Fz_r);
 
 Fx_f = Fl_f * cos(delta_f) - Fc_f * sin(delta_f);   % u corresponds to front steering angle
 Fy_f = Fl_f * sin(delta_f) + Fc_f * cos(delta_f);   % u corresponds to front steering angle
@@ -62,23 +64,23 @@ Fx_r = Fl_r; % rear steering angle = 0 --> simplification
 Fy_r = Fc_r; % rear steering angle = 0 --> simplification
 
 % Define NL system dynamics
-xdot = [xi(2) * xi(4) + (2 / m) * (Fx_f + Fx_r);
-        -xi(1) * xi(4) + (2 / m) * (Fy_f + Fy_r);
-        xi(4);
+xdot = [Dy * Dpsi + (2 / m) * (Fx_f + Fx_r);
+        -Dx * Dpsi + (2 / m) * (Fy_f + Fy_r);
+        Dpsi;
         (2 / I) * (a * Fy_f - b * Fy_r);
-        xi(1) * cos(xi(3)) - xi(2) * sin(xi(3));
-        xi(1) * sin(xi(3)) + xi(2) * cos(xi(3))];
+        Dx * cos(psi) - Dy * sin(psi);
+        Dx * sin(psi) + Dy * cos(psi)];
 % Simulation of noisy output of plant
-y = [xdot(3); xdot(6)];
+y = [psi; Y];
     
 % Linearize NL system dynamics
-jacobi_xdot = jacobian(xdot, xi);
-A_c_F = Function('jacobi_xdot', {xi, u}, {jacobi_xdot});
-A_c = A_c_F(x_hat, u_act);
+jacobi_xdot = jacobian(xdot, [Dx,Dy,psi,Dpsi,X,Y]);
+%A_c_F = Function('jacobi_xdot', {xi, u}, {jacobi_xdot});
+A_c = jacobi_xdot(x_hat, u_act);
 A_d = eye(nx) + Ts * A_c;
-jacobi_y = jacobian(y, xi);
-C_c_F = Function('jacobi_y', {xi, u}, {jacobi_y});
-C_c = C_c_F(x_hat, u_act);
+jacobi_y = jacobian(y, [Dx,Dy,psi,Dpsi,X,Y]);
+%C_c_F = Function('jacobi_y', {xi, u}, {jacobi_y});
+C_c = jacobi_y(x_hat, u_act);
 C_d = C_c;
 
 % Noise model for state
