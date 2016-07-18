@@ -122,11 +122,183 @@ and some more here
 \end{frame}
 
 
+
+
+
+
 \begin{frame}
 \frametitle{My Frametitle2}
-%\framesubtitle{Subtitles are optional}
 
 My second frame
+
+\end{frame}
+
+
+
+
+
+\begin{frame}
+\frametitle{System Overview}
+
+\begin{figure} [h]
+\begin{center}
+\includegraphics[scale=0.8]{images/dynamics_overview.pdf}
+\label{fig:pendel}
+\end{center}
+\end{figure}
+\[F_l : \text{Longitudial (tractive) force} \qquad F_c : \text{Lateral (cornering) force}\]
+\[v_l : \text{Longitudial (tractive) velocity} \qquad v_l : \text{Lateral (cornering) velocity}\]
+\[\dot{x} \quad \dot{y} \quad \dot{\psi} : \text{car velocities in local frame}\]
+
+\end{frame}
+
+
+
+
+
+\begin{frame}
+\frametitle{System Overview}
+
+% \begin{align*}
+% v_{y_f} &= \dot{y} + a \dot{\psi}, & v_{y_r} &= \dot{y} - b \dot{\psi} \\
+% v_{x_f} &= \dot{x}, & v_{x_r} &= \dot{x}
+% \end{align*}
+\begin{block}{System State and Action}
+\[\xi = [\dot{x}, \dot{y}, \psi, \dot{\psi}, X, Y] \qquad \qquad u = \delta_f\]
+\end{block}
+
+\begin{columns}[t,onlytextwidth]
+\column{.45\textwidth}
+\begin{block}{Vehicle Dynamics}
+\begin{align*}
+\ddot{x} &= \dot{y} \dot{\psi} + \frac{2}{m} (F_{x_f} + F_{x_r}) \\
+\ddot{y} &= - \dot{x} \dot{\psi} + \frac{2}{m} (F_{y_f} + F_{y_r}) \\
+\ddot{\psi} &= \frac{2}{I} (a F_{y_f} - b F_{y_r}) \\
+\dot{X} &= \dot{x} \ cos \psi - \dot{y} \ sin \psi \\
+\dot{Y} &= \dot{x} \ sin \psi + \dot{y} \ cos \psi
+\end{align*}
+\end{block}
+
+\column{.45\textwidth}
+\begin{block}{Forces (front and rear wheels)}
+\begin{align*}
+F_x &= F_l \ cos \delta - F_c \ sin \delta \\
+F_y &= F_l \ sin \delta + F_c \ cos \delta
+\end{align*}
+Pacejka Tyre Model:
+\begin{align*}
+F_l &= f_l(\alpha, s, F_z) \\
+F_c &= f_c(\alpha, s, F_z)
+\end{align*}
+\end{block}
+
+\end{columns}
+
+\end{frame}
+
+
+
+
+
+\begin{frame}
+\frametitle{System Overview}
+
+\begin{align*}
+Y_{ref}(X) &= 2.025 \ (1 + tanh(z_1)) - 2.85 \ (1 + tanh(z_2)) \\
+\psi_{ref}(X) &= tan^{-1} \left( 0.1944 \ \left(\frac{1}{cosh(z_1)}\right)^2 - 0.311 \ \left(\frac{1}{cosh(z_2)}\right)^2 \right)
+\end{align*}
+\[\quad \text{with} \quad z_1 = \frac{2.4}{25}(X - 27.19) - 1.2 \qquad z_2 = \frac{2.4}{21.95}(X - 56.46) \]
+
+
+\begin{columns}[t,onlytextwidth]
+\column{.45\textwidth}
+Y-reference image
+
+\column{.45\textwidth}
+Psi-reference image
+
+\end{columns}
+
+\end{frame}
+
+
+
+
+
+
+\begin{frame}
+\frametitle{System Overview}
+
+\begin{block}{Objective Function}
+
+
+\begin{align*}
+J(\xi_t, \Delta U_t) = &\sum_{i=1}^{H_p} \left( ||\xi_i(6) - Y_{ref}(\xi_i(5)) ||_{75}^2 + ||\xi_i(3) - \psi_{ref}(\xi_i(5)) ||_{500}^2 \right) \\
+&+ \sum_{i=0}^{H_c-1} || \Delta u_i ||_{150}^2
+\end{align*}
+\[\text{with} \quad H_p : Prediction Horizon \qquad H_c : Control Horizon\]
+
+
+\end{block}
+
+\end{frame}
+
+
+
+
+
+
+
+\begin{frame}
+\frametitle{System Overview}
+
+\begin{align*}
+\min_{\Delta U \in \mathbb{R}^{H_p}} \quad &J(\xi_t, \Delta U_t) \\
+s.t. \qquad &\xi_{k+1} = f(\xi_k, u_k) \\
+&\delta_{min} \leq u_k \leq \delta_{max} \\
+&\Delta \delta_{min} \leq \Delta u_k \leq \Delta \delta_{max} \\
+&u_k = u_{k-1} + \Delta u_k \\
+&\Delta u_k = 0, \qquad \qquad k = H_c, . . . , H_p \\
+&\xi_0 = \xi_{init} \\
+& u_{-1} = u_{init}
+\end{align*}
+
+\end{frame}
+
+
+
+
+
+
+
+\begin{frame}
+\frametitle{System Overview}
+
+\begin{align*}
+\min_{\Delta U \in \mathbb{R}^{H_p}} \quad &J(\xi_t, \Delta U_t) + \rho \epsilon \\
+s.t. \qquad &\xi_{k+1} = A_t \xi_k + B_t u_k \\
+&\alpha_{k+1} = C_t \xi_k + D_t u_k \\
+&\delta_{min} \leq u_k \leq \delta_{max} \\
+&\Delta \delta_{min} \leq \Delta u_k \leq \Delta \delta_{max} \\
+&\alpha_{min} - \epsilon \leq \alpha_k \leq \alpha_{max} + \epsilon \\
+&u_k = u_{k-1} + \Delta u_k \\
+&\Delta u_k = 0, \qquad \qquad k = H_c, . . . , H_p \\
+&\epsilon \geq 0 \\
+&\xi_0 = \xi_{init} \\
+& u_{-1} = u_{init}
+\end{align*}
+
+\end{frame}
+
+
+
+
+
+
+
+\begin{frame}
+\frametitle{System Overview}
+Results. . .
 
 \end{frame}
 
