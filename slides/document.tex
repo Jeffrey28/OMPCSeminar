@@ -146,9 +146,11 @@ My second frame
 \label{fig:pendel}
 \end{center}
 \end{figure}
-\[F_l : \text{Longitudial (tractive) force} \qquad F_c : \text{Lateral (cornering) force}\]
-\[v_l : \text{Longitudial (tractive) velocity} \qquad v_l : \text{Lateral (cornering) velocity}\]
-\[\dot{x} \quad \dot{y} \quad \dot{\psi} : \text{car velocities in local frame}\]
+\[F_l : \text{Longitudial (tractive) force [N]} \qquad F_c : \text{Lateral
+(cornering) force [N]]}\] \[v_l : \text{Longitudial (tractive) velocity [m/s]]}
+\qquad v_l : \text{Lateral (cornering) velocity}\] \[\dot{x}, \dot{y} :
+\text{local velocities [m/s]} \qquad \dot{\psi} :
+\text{angular velocity [1/s]}\]
 
 \end{frame}
 
@@ -157,19 +159,19 @@ My second frame
 
 
 \begin{frame}
-\frametitle{System Overview}
+\frametitle{System overview}
 
 % \begin{align*}
 % v_{y_f} &= \dot{y} + a \dot{\psi}, & v_{y_r} &= \dot{y} - b \dot{\psi} \\
 % v_{x_f} &= \dot{x}, & v_{x_r} &= \dot{x}
 % \end{align*}
-\begin{block}{System State and Action}
+\begin{block}{System state and input}
 \[\xi = [\dot{x}, \dot{y}, \psi, \dot{\psi}, X, Y] \qquad \qquad u = \delta_f\]
 \end{block}
 
 \begin{columns}[t,onlytextwidth]
 \column{.45\textwidth}
-\begin{block}{Vehicle Dynamics}
+\begin{block}{Vehicle dynamics}
 \begin{align*}
 \ddot{x} &= \dot{y} \dot{\psi} + \frac{2}{m} (F_{x_f} + F_{x_r}) \\
 \ddot{y} &= - \dot{x} \dot{\psi} + \frac{2}{m} (F_{y_f} + F_{y_r}) \\
@@ -185,7 +187,7 @@ My second frame
 F_x &= F_l \ cos \delta - F_c \ sin \delta \\
 F_y &= F_l \ sin \delta + F_c \ cos \delta
 \end{align*}
-Pacejka Tyre Model:
+Pacejka tire model:
 \begin{align*}
 F_l &= f_l(\alpha, s, F_z) \\
 F_c &= f_c(\alpha, s, F_z)
@@ -201,7 +203,7 @@ F_c &= f_c(\alpha, s, F_z)
 
 
 \begin{frame}
-\frametitle{System Overview}
+\frametitle{Trajectory generation}
 
 \begin{align*}
 Y_{ref}(X) &= 2.025 \ (1 + tanh(z_1)) - 2.85 \ (1 + tanh(z_2)) \\
@@ -227,16 +229,17 @@ Psi-reference image
 
 
 \begin{frame}
-\frametitle{System Overview}
+\frametitle{Optimization problem}
 
-\begin{block}{Objective Function}
+\begin{block}{Objective function}
 
 
 \begin{align*}
 J(\xi_t, \Delta U_t) = &\sum_{i=1}^{H_p} \left( ||\xi_i(6) - Y_{ref}(\xi_i(5)) ||_{75}^2 + ||\xi_i(3) - \psi_{ref}(\xi_i(5)) ||_{500}^2 \right) \\
 &+ \sum_{i=0}^{H_c-1} || \Delta u_i ||_{150}^2
 \end{align*}
-\[\text{with} \quad H_p : Prediction Horizon \qquad H_c : Control Horizon\]
+\[\text{with} \quad H_p : \text{prediction horizon} \qquad H_c : \text{control
+horizon}\]
 
 
 \end{block}
@@ -250,7 +253,7 @@ J(\xi_t, \Delta U_t) = &\sum_{i=1}^{H_p} \left( ||\xi_i(6) - Y_{ref}(\xi_i(5)) |
 
 
 \begin{frame}
-\frametitle{System Overview}
+\frametitle{NLP problem formulation}
 
 \begin{align*}
 \min_{\Delta U \in \mathbb{R}^{H_p}} \quad &J(\xi_t, \Delta U_t) \\
@@ -272,13 +275,13 @@ s.t. \qquad &\xi_{k+1} = f(\xi_k, u_k) \\
 
 
 \begin{frame}
-\frametitle{System Overview}
+\frametitle{LTV problem formulation}
 
 \begin{align*}
 \min_{\Delta U \in \mathbb{R}^{H_p}} \quad &J(\xi_t, \Delta U_t) + \rho \epsilon \\
 s.t. \qquad &\xi_{k+1} = A_t \xi_k + B_t u_k \\
 &\alpha_{k+1} = C_t \xi_k + D_t u_k \\
-&\delta_{min} \leq u_k \leq \delta_{max} \\
+&\delta_{min} \leq u_k \leq \delta_{max} \\ 
 &\Delta \delta_{min} \leq \Delta u_k \leq \Delta \delta_{max} \\
 &\alpha_{min} - \epsilon \leq \alpha_k \leq \alpha_{max} + \epsilon \\
 &u_k = u_{k-1} + \Delta u_k \\
