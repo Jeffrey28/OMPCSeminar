@@ -1,4 +1,4 @@
-function [ xNext ] = plant_step( xPrevious, u, Ts, k, pars )
+function [ xNext ] = plant_step( xPrevious, u, Ts, k, pars, integrator )
 %PLANT_STEP returns the next state of the plant.
 %   This is the simulation function of the plant.
 % INPUTS:
@@ -11,33 +11,34 @@ function [ xNext ] = plant_step( xPrevious, u, Ts, k, pars )
 % OUTPUTS:
 %  xNext: state of the plant at step k+1
 
-% Initialization of working variables
-Dx = xPrevious(1);
-Dy = xPrevious(2);
-p = xPrevious(3);
-Dp = xPrevious(4);
-X = xPrevious(5);
-Y = xPrevious(6);
+if nargin < 6
+    integrator = 'ode45';
+end
 
-% Integration step of system plant
-tspan = [k*Ts,(k+1)*Ts];
-init = [Dx; Dy; p; Dp; X; Y];
-[tout, Yout] = ode45(@(t, x) dgl(t, x, pars, u), tspan, init);
+if strcmp(integrator, 'RK4') == 1
+    % RK4 integrator
+    Mrk = 20;
+    X = xPrevious;
+    DT = Ts / Mrk;
 
-% Compute the next state of the plant for time step (k+1)*Ts
-Dx_values = Yout(:, 1);
-xNext(1) = Dx_values(end);
-Dy_values = Yout(:, 2);
-xNext(2) = Dy_values(end);
-p_values = Yout(:, 3);
-xNext(3) = p_values(end);
-Dp_values = Yout(:, 4);
-xNext(4) = Dp_values(end);
-X_values = Yout(:, 5);
-xNext(5) = X_values(end);
-Y_values = Yout(:, 6);
-xNext(6) = Y_values(end);
+    for i=1:Mrk
+        k1 = dgl(0, X, pars, u);
+        k2 = dgl(0, X + DT * k1 / 2, pars, u);
+        k3 = dgl(0, X + DT * k2 / 2, pars, u);
+        k4 = dgl(0, X + DT * k3, pars, u);
+        X   = X + (DT / 6) * (k1 + 2*k2 + 2*k3 + k4);
+    end
 
-xNext = xNext';
+    xNext = X;
+else
+    % Integration step of system plant
+    tspan = [k*Ts, (k+1)*Ts];
+    %init = [Dx; Dy; p; Dp; X; Y];
+    [tout, Yout] = ode45(@(t, x) dgl(t, x, pars, u), tspan, xPrevious);
+
+    % Compute the next state of the plant for time step (k+1)*Ts
+    xNext = Yout(end, :);
+    xNext = xNext';
+end
 
 end

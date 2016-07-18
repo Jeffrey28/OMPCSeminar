@@ -2,26 +2,30 @@ clear all;
 
 %% initialize
 pars = plant_init();
-k=0;
+k = 0;
 Ts = pars.Ts;
 x0 = pars.x0;
 flag = 1;
 
 xHat = [5;0;0;0;0;0]; % TODO: Initial state guess (don't cheat and use x0 ;-P )
+RK4 = RK4_fcn(20, Ts);
 u = 0;
-x = [5;0;0;0;0;0];
+x = x0;
 P = 0;
 
 u_opt = [];
-%res = zeros(6, 100);
 
 figure;
 
+tic
+
 while k < 500
     %% compute next controls
-    u = OMPC(xHat, u, Ts, flag);
+    u = OMPC(xHat, u, Ts, RK4, flag);
     u_opt(k+1) = u;
     disp(k);
+    
+    toc
     
     %% update to time step k+1
     xNext = plant_step(x, u, Ts, k, pars); % simulate next timestep
