@@ -239,8 +239,11 @@ Psi-reference image
 
 
 \begin{align*}
-J(\xi_t, \Delta U_t) = &\sum_{i=1}^{H_p} \left( ||\xi_i(6) - Y_{ref}(\xi_i(5)) ||_{75}^2 + ||\xi_i(3) - \psi_{ref}(\xi_i(5)) ||_{500}^2 \right) \\
-&+ \sum_{i=0}^{H_c-1} || \Delta u_i ||_{150}^2
+J(\xi_{t}, \Delta U_t) = &\sum_{i=1}^{H_p} ( ||\xi_{t+i,t}(6) -
+Y_{ref_{t+i,t}}(\xi_{t+i,t}(5)) ||_{75}^2 \\ 
+&+ ||\xi_{t+i,t}(3) -
+\psi_{ref_{t+i,t}}(\xi_{t+i,t}(5)) ||_{500}^2 ) \\
+&+ \sum_{i=0}^{H_c-1} || \Delta u_{t+i,t} ||_{150}^2
 \end{align*}
 \[\text{with} \quad H_p : \text{prediction horizon} \qquad H_c : \text{control
 horizon}\]
@@ -261,11 +264,14 @@ horizon}\]
 
 \begin{align*}
 \min_{\Delta U \in \mathbb{R}^{H_p}} \quad &J(\xi_t, \Delta U_t) \\
-s.t. \qquad &\xi_{k+1} = f(\xi_k, u_k) \\
-&\delta_{min} \leq u_k \leq \delta_{max} \\
-&\Delta \delta_{min} \leq \Delta u_k \leq \Delta \delta_{max} \\
-&u_k = u_{k-1} + \Delta u_k \\
-&\Delta u_k = 0, \qquad \qquad k = H_c, . . . , H_p \\
+s.t. \qquad &\xi_{k+1,t} = f(\xi_{k,t}, u_{k,t}) \qquad \qquad k = t, . . . , t
++ H_{p}
+\\
+&\delta_{min} \leq u_{k,t} \leq \delta_{max} \\
+&\Delta \delta_{min} \leq \Delta u_{k,t} \leq \Delta \delta_{max} \\
+&u_{k,t} = u_{k-1,t} + \Delta {u_{k,t}} \qquad \qquad k = t, . . . , t + H_c
+-1 \\
+&\Delta u_{k,t} = 0, \qquad \qquad k = t + H_c, . . . , t + H_p \\
 &\xi_0 = \xi_{init} \\
 & u_{-1} = u_{init}
 \end{align*}
@@ -282,14 +288,16 @@ s.t. \qquad &\xi_{k+1} = f(\xi_k, u_k) \\
 \frametitle{LTV problem formulation }
 
 \begin{align*}
-\min_{\Delta U \in \mathbb{R}^{H_p}} \quad &J(\xi_t, \Delta U_t) + \rho \epsilon \\
-s.t. \qquad &\xi_{k+1} = A_t \xi_k + B_t u_k \\
-&\alpha_{k+1} = C_t \xi_k + D_t u_k \\
-&\delta_{min} \leq u_k \leq \delta_{max} \\ 
-&\Delta \delta_{min} \leq \Delta u_k \leq \Delta \delta_{max} \\
-&\alpha_{min} - \epsilon \leq \alpha_k \leq \alpha_{max} + \epsilon \\
-&u_k = u_{k-1} + \Delta u_k \\
-&\Delta u_k = 0, \qquad \qquad k = H_c, . . . , H_p \\
+\min_{\Delta U \in \mathbb{R}^{H_p}, \epsilon} \quad &J(\xi_t, \Delta U_t) +
+\rho \epsilon \\
+s.t. \qquad &\xi_{k+1,t} = A_t \xi_k + B_t u_k \\
+&\alpha_{k+1} = C_t \xi_k + D_t u_k \qquad \qquad k = t, . . . , t + H_p \\
+&\delta_{min} \leq u_{k,t} \leq \delta_{max} \\ 
+&\Delta \delta_{min} \leq \Delta u_{k,t} \leq \Delta \delta_{max} \\
+&u_{k,t} = u_{k-1,t} + \Delta u_{k,t} \qquad \qquad k = t, . . ., t + H_c - 1 \\
+&\alpha_{min} - \epsilon \leq \alpha_{k,t} \leq \alpha_{max} + \epsilon \qquad
+\qquad k = t, . . ., t + H_p\\
+&\Delta u_k = 0, \qquad \qquad k = t + H_c, . . . , t + H_p \\
 &\epsilon \geq 0 \\
 &\xi_0 = \xi_{init} \\
 & u_{-1} = u_{init}
