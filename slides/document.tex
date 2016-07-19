@@ -306,12 +306,11 @@ s.t. \qquad &\xi_{k+1,t} = f(\xi_{k,t}, u_{k,t})
 \min_{\Delta U \in \mathbb{R}^{H_p}, \epsilon} \quad &J(\xi_t, \Delta U_t) +
 \rho \epsilon \\
 s.t. \qquad &\xi_{k+1,t} = A_t \xi_k + B_t u_k \\
-&\alpha_{k,t} = C_t \xi_k + D_t u_k \qquad \qquad k = t, . . . , t + H_p \\
+&\alpha_{k,t} = C_t \xi_k + D_t u_k \\
+&\alpha_{min} - \epsilon \leq \alpha_{k,t} \leq \alpha_{max} + \epsilon \\
+&u_{k,t} = u_{k-1,t} + \Delta u_{k,t} \qquad \qquad k = t, . . . , t + H_p \\
 &\delta_{min} \leq u_{k,t} \leq \delta_{max} \\ 
-&\Delta \delta_{min} \leq \Delta u_{k,t} \leq \Delta \delta_{max} \\
-&u_{k,t} = u_{k-1,t} + \Delta u_{k,t} \qquad \qquad k = t, . . ., t + H_c - 1 \\
-&\alpha_{min} - \epsilon \leq \alpha_{k,t} \leq \alpha_{max} + \epsilon \qquad
-\qquad k = t, . . ., t + H_p\\
+&\Delta \delta_{min} \leq \Delta u_{k,t} \leq \Delta \delta_{max} \qquad \qquad k = t, . . ., t + H_c - 1 \\
 &\Delta u_k = 0, \qquad \qquad k = t + H_c, . . . , t + H_p \\
 &\epsilon \geq 0 \\
 &\xi_0 = \xi_{init} \\
@@ -352,6 +351,75 @@ s.t. \qquad &\xi_{k+1,t} = A_t \xi_k + B_t u_k \\
     7 \ / \ 3   & 0.020 & 0.398 & 2.119 & 3.479 \\ \hline
     15 \ / \ 10 & 0.050 & 0.593 & 3.468 & 4.592 \\ \hline
     25 \ / \ 10 & 0.073 & 0.728 & 4.336 & 5.188 \\ \hline
+  \end{tabular}
+\end{center}
+
+\end{frame}
+
+
+
+
+
+
+\begin{frame}
+\frametitle{Results}
+
+\begin{center}
+  \begin{tabular}{ |C|L|L|L|L| }
+    \hline
+    \textbf{10 m / s} & \multicolumn{4}{c|}{NL-MPC} \\ \hline
+    H_p / H_c   & Y_{rms} & Y_{max} & \psi_{rms} & \psi_{max} \\ \hline
+    3 \ / \ 3   & 0.024 & 0.395 & 0.320 & 1.678 \\ \hline
+    7 \ / \ 3   & 5.990*10^{-4} & 0.060 & 0.413 & 1.605 \\ \hline
+    15 \ / \ 10 & 0.001 & 0.167 & 0.463 & 2.023 \\ \hline
+    25 \ / \ 10 & 0.002 & 0.138 & 0.281 & 1.655 \\ \hline
+  \end{tabular}
+\end{center}
+
+\begin{center}
+  \begin{tabular}{ |C|L|L|L|L| }
+    \hline
+    \textbf{10 m / s} & \multicolumn{4}{c|}{LTV-MPC} \\ \hline
+    H_p / H_c   & Y_{rms} & Y_{max} & \psi_{rms} & \psi_{max} \\ \hline
+    3 \ / \ 3   & 0.003 & 0.149 & 2.093 & 3.671 \\ \hline
+    7 \ / \ 3   & 0.099 & 0.815 & 5.234 & 5.558 \\ \hline
+    15 \ / \ 10 & 0.158 & 0.977 & 6.700 & 6.460 \\ \hline
+    25 \ / \ 10 & 0.193 & 1.051 & 7.161 & 6.735 \\ \hline
+  \end{tabular}
+\end{center}
+
+\end{frame}
+
+
+
+
+
+
+\begin{frame}
+\frametitle{Results}
+
+\begin{center}
+  \begin{tabular}{ |C|L|L|L|L| }
+    \hline
+    \textbf{20 m / s} & \multicolumn{4}{c|}{NL-MPC} \\ \hline
+    H_p / H_c   & Y_{rms} & Y_{max} & \psi_{rms} & \psi_{max} \\ \hline
+    3 \ / \ 3   & 0.078 & 0.790 & 7.800 & 7.994 \\ \hline
+    7 \ / \ 3   & 0.027 & 0.447 & 2.510 & 3.246 \\ \hline
+    15 \ / \ 10 & 1.091*10^{-3} & 70.198 & 2.982*10^{3} & 1.124*10^{2} \\ \hline
+    25 \ / \ 10 & 1.275*10^{3} & 7.331*10 & 3.654*10^{3} & 1.245*10^{2} \\
+    \hline
+  \end{tabular}
+\end{center}
+
+\begin{center}
+  \begin{tabular}{ |C|L|L|L|L| }
+    \hline
+    \textbf{20 m / s} & \multicolumn{4}{c|}{LTV-MPC} \\ \hline
+    H_p / H_c   & Y_{rms} & Y_{max} & \psi_{rms} & \psi_{max} \\ \hline
+    3 \ / \ 3   & 1.229*10^{2} & 3.371*10 & 1.063*10^{3} & 7.779*10^{2} \\
+    \hline 7 \ / \ 3   & 0.360 & 1.616 & 1.306*10 & 9.754 \\ \hline
+    15 \ / \ 10 & 7.162*10 & 2.741*10 & 7.706*10 & 6.944*10 \\ \hline
+    25 \ / \ 10 & 0.329 & 1.456 & 1.011*10 & 65.174 \\ \hline
   \end{tabular}
 \end{center}
 
