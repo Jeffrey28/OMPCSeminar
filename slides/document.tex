@@ -101,10 +101,10 @@ Albert Ludwigs University, Freiburg}
 %============================================================
 %=========================== LIPM ===========================
 %============================================================
-\section*{Section name}
+%\section*{Section name}
 
-\subsection*{Subsection1 name}
-\subsection*{Subsection2 name}
+%\subsection*{Subsection1 name}
+%\subsection*{Subsection2 name}
 
 \begin{frame}
 \frametitle{My Frametitle}
@@ -146,10 +146,13 @@ My second frame
 \label{fig:pendel}
 \end{center}
 \end{figure}
-\[F_l : \text{Longitudial (tractive) force [N]} \qquad F_c : \text{Lateral
-(cornering) force [N]]}\] \[v_l : \text{Longitudial (tractive) velocity [m/s]]}
-\qquad v_l : \text{Lateral (cornering) velocity}\] \[\dot{x}, \dot{y} :
-\text{local velocities [m/s]} \qquad \dot{\psi} :
+% \[F_l : \text{Longitudial (tractive) force [N]} \qquad F_c : \text{Lateral
+% (cornering) force [N]}\]
+\[F_l, F_c : \text{Longitudial (tractive), lateral (cornering) force [N]}\]
+% \[v_l : \text{Longitudial (tractive) velocity [m/s]} \qquad v_c : \text{Lateral
+% (cornering) velocity [m/s]}\]
+\[v_l, v_c : \text{Longitudial (tractive), lateral (cornering) velocity [m/s]}\]
+\[\dot{x}, \dot{y} : \text{local velocities [m/s]} \qquad \dot{\psi} :
 \text{angular velocity [1/s]}\]
 
 \end{frame}
@@ -209,7 +212,8 @@ F_c &= f_c(\alpha, s, F_z)
 Y_{ref}(X) &= 2.025 \ (1 + tanh(z_1)) - 2.85 \ (1 + tanh(z_2)) \\
 \psi_{ref}(X) &= tan^{-1} \left( 0.1944 \ \left(\frac{1}{cosh(z_1)}\right)^2 - 0.311 \ \left(\frac{1}{cosh(z_2)}\right)^2 \right)
 \end{align*}
-\[\quad \text{with} \quad z_1 = \frac{2.4}{25}(X - 27.19) - 1.2 \qquad z_2 = \frac{2.4}{21.95}(X - 56.46) \]
+\[\quad \text{with} \quad z_1 = \frac{2.4}{25}(X - 27.19) - 1.2 \qquad z_2 =
+\frac{2.4}{21.95}(X - 56.46) - 1.2 \]
 
 
 \begin{columns}[t,onlytextwidth]
