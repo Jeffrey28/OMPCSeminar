@@ -23,6 +23,11 @@
 \usepackage{courier}
 \usepackage{xcolor}
 
+\usepackage{amstext} % for \text macro
+\usepackage{array}   % for \newcolumntype macro
+\newcolumntype{L}{>{$}l<{$}} % math-mode version of "l" column type
+\newcolumntype{C}{>{$}c<{$}} % math-mode version of "c" column type
+
 
 \usepackage[T1]{fontenc}
 
@@ -321,9 +326,34 @@ s.t. \qquad &\xi_{k+1,t} = A_t \xi_k + B_t u_k \\
 
 
 
+
+
 \begin{frame}
-\frametitle{System Overview}
-Results. . .
+\frametitle{Results}
+
+\begin{center}
+  \begin{tabular}{ |C|L|L|L|L| }
+    \hline
+    \textbf{5 m / s} & \multicolumn{4}{c|}{NL-MPC} \\ \hline
+    H_p / H_c   & Y_{rms} & Y_{max} & \psi_{rms} & \psi_{max} \\ \hline
+    3 \ / \ 3   & 0.004 & 0.216 & 0.543 & 1.987 \\ \hline
+    7 \ / \ 3   & 0.001 & 0.084 & 0.274 & 1.356 \\ \hline
+    15 \ / \ 10 & 3.991 * 10^{-4} & 0.055 & 0.399 & 1.666 \\ \hline
+    25 \ / \ 10 & 1.001 * 10^{-4} & 0.0311 & 0.340 & 1.339 \\ \hline
+  \end{tabular}
+\end{center}
+
+\begin{center}
+  \begin{tabular}{ |C|L|L|L|L| }
+    \hline
+    \textbf{5 m / s} & \multicolumn{4}{c|}{LTV-MPC} \\ \hline
+    H_p / H_c   & Y_{rms} & Y_{max} & \psi_{rms} & \psi_{max} \\ \hline
+    3 \ / \ 3   & 0.005 & 0.206 & 1.595 & 4.716 \\ \hline
+    7 \ / \ 3   & 0.020 & 0.398 & 2.119 & 3.479 \\ \hline
+    15 \ / \ 10 & 0.050 & 0.593 & 3.468 & 4.592 \\ \hline
+    25 \ / \ 10 & 0.073 & 0.728 & 4.336 & 5.188 \\ \hline
+  \end{tabular}
+\end{center}
 
 \end{frame}
 
