@@ -264,12 +264,12 @@ horizon}\]
 
 \begin{align*}
 \min_{\Delta U \in \mathbb{R}^{H_p}} \quad &J(\xi_t, \Delta U_t) \\
-s.t. \qquad &\xi_{k+1,t} = f(\xi_{k,t}, u_{k,t}) \qquad \qquad k = t, . . . , t
+s.t. \qquad &\xi_{k+1,t} = f(\xi_{k,t}, u_{k,t})
 + H_{p}
-\\
+\\ &u_{k,t} = u_{k-1,t} + \Delta {u_{k,t}} \qquad \qquad k = t, . . . , t
++ H_{p}\\
 &\delta_{min} \leq u_{k,t} \leq \delta_{max} \\
-&\Delta \delta_{min} \leq \Delta u_{k,t} \leq \Delta \delta_{max} \\
-&u_{k,t} = u_{k-1,t} + \Delta {u_{k,t}} \qquad \qquad k = t, . . . , t + H_c
+&\Delta \delta_{min} \leq \Delta u_{k,t} \leq \Delta \delta_{max} \qquad \qquad k = t, . . . , t + H_c
 -1 \\
 &\Delta u_{k,t} = 0, \qquad \qquad k = t + H_c, . . . , t + H_p \\
 &\xi_0 = \xi_{init} \\
@@ -291,7 +291,7 @@ s.t. \qquad &\xi_{k+1,t} = f(\xi_{k,t}, u_{k,t}) \qquad \qquad k = t, . . . , t
 \min_{\Delta U \in \mathbb{R}^{H_p}, \epsilon} \quad &J(\xi_t, \Delta U_t) +
 \rho \epsilon \\
 s.t. \qquad &\xi_{k+1,t} = A_t \xi_k + B_t u_k \\
-&\alpha_{k+1} = C_t \xi_k + D_t u_k \qquad \qquad k = t, . . . , t + H_p \\
+&\alpha_{k,t} = C_t \xi_k + D_t u_k \qquad \qquad k = t, . . . , t + H_p \\
 &\delta_{min} \leq u_{k,t} \leq \delta_{max} \\ 
 &\Delta \delta_{min} \leq \Delta u_{k,t} \leq \Delta \delta_{max} \\
 &u_{k,t} = u_{k-1,t} + \Delta u_{k,t} \qquad \qquad k = t, . . ., t + H_c - 1 \\
