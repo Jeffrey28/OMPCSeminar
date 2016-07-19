@@ -1,4 +1,4 @@
-function [ YRMS ] = YRMS( res )
+function [ YRMS, YMax ] = YRMS( res )
 
 X_sim = res(:, 5);
 Y_sim = res(:, 6);
@@ -12,6 +12,7 @@ for i = 1 : size
 end
 
 Y_diff = Y_sim - Y_ref;
+YMax = max(abs(Y_diff));
 sqDiff = Y_diff.^2;
 YRMS = sum(sqDiff) / size;
 

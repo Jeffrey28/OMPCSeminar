@@ -1,4 +1,4 @@
-function [ PsiRMS ] = PsiRMS( res )
+function [ PsiRMS, PsiMax ] = PsiRMS( res )
 
 X_sim = res(:, 5);
 Psi_sim = res(:, 3) * (180 / pi);
@@ -12,6 +12,7 @@ for i = 1 : size
 end
 
 Psi_diff = Psi_sim - Psi_ref;
+PsiMax = max(abs(Psi_diff));
 sqDiff = Psi_diff.^2;
 PsiRMS = sum(sqDiff) / size;
 
