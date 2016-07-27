@@ -6,31 +6,25 @@ Ts = 0.05;
 k = 0;
 
 % Actual settings
-x_hat = [5;0;0;0;0;0];
-u_act = 0;
+x_hat = [30;0;0;0;0;0];
+u_act = 10;
 w_state = 0;
-cov1 = 1;
-cov2 = 1;
-cov3 = 1;
-cov4 = 1;
-cov5 = 1;
-cov6 = 1;
-P = diag([cov1 cov2 cov3 cov4 cov5 cov6]); % Covariance matrix of state vector
 
-nx = 6;     %State dimension
-nu = 1;     %Control dimension
+nx = 6; %State dimension
+nu = 1; %Control dimension
 
 % Parameter
-% a = 1;
-% b = 1;
-% m = 2050;
-% I = 3344;
-% g = 9.81;
+a = 1;
+b = 1;
+m = 2050;
+I = 3344;
+g = 9.81;
 
 %u = MX.sym('u', nu);
 %xi = MX.sym('xi', nx);
 
-syms Dx Dy psi Dpsi X Y u a b m g I;
+% For derivative calculation
+syms Dx Dy psi Dpsi X Y u;
 
 % System dynamics
 delta_f = u * pi / 180;
@@ -70,26 +64,28 @@ xdot = [Dy * Dpsi + (2 / m) * (Fx_f + Fx_r);
         (2 / I) * (a * Fy_f - b * Fy_r);
         Dx * cos(psi) - Dy * sin(psi);
         Dx * sin(psi) + Dy * cos(psi)];
+    
 % Simulation of noisy output of plant
 y = [psi; Y];
     
 % Linearize NL system dynamics
+% State
 jacobi_xdot = jacobian(xdot, [Dx,Dy,psi,Dpsi,X,Y]);
-%A_c_F = Function('jacobi_xdot', {xi, u}, {jacobi_xdot});
-A_c = jacobi_xdot(x_hat, u_act);
+A_c = double(subs(jacobi_xdot, [Dx,Dy,psi,Dpsi,X,Y,u], [x_hat',u_act]));
 A_d = eye(nx) + Ts * A_c;
+
+% Output
 jacobi_y = jacobian(y, [Dx,Dy,psi,Dpsi,X,Y]);
-%C_c_F = Function('jacobi_y', {xi, u}, {jacobi_y});
-C_c = jacobi_y(x_hat, u_act);
+C_c = double(subs(jacobi_y, [Dx,Dy,psi,Dpsi,X,Y,u], [x_hat',u_act]));
 C_d = C_c;
 
 % Noise model for state
 W_c = diag(ones(1, nx));
-W_c = 0.00000001 * W_c;
+W_c = 1 * W_c;
 W_d = Ts * W_c;
 
 % Noise model for output
-V_c = [[0.1 0]; [0 0.1]];
+V_c = [[1 0]; [0 1]];
 V_d = (1 / Ts) * V_c;
 
 P = W_d;
@@ -101,5 +97,7 @@ x_hat = A_d * x_hat;
 P = A_d * P * A_d' + W_d;
 
 % Update step
-P = inv(inv(P) + C_d' * inv(V_d) * C_d);
+P = inv(inv(P) + C_d' * inv(V_d)*C_d);
 x_hat = x_hat + P * C_d' * inv(V_d) * (y - C_d * x_hat);
+
+disp(x_hat);
