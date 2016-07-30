@@ -35,7 +35,7 @@
 \title[Predictive Active Steering Control for Autonomous Vehicle
 Systems]{Example for an Model Predictive Controller
 \\
-for an active steering coltrol  \\
+for an active steering control  \\
 of an automomous vehicle}
 
 %\subtitle{}
@@ -111,32 +111,19 @@ Albert Ludwigs University, Freiburg}
 %\subsection*{Subsection1 name}
 %\subsection*{Subsection2 name}
 
-\begin{frame}
-\frametitle{My Frametitle}
-%\framesubtitle{Subtitles are optional}
-
-\begin{columns}[t,onlytextwidth]
-\column{.5\textwidth}
-Some stuff here
-
-\column{.5\textwidth}
-and some more here
-
-\end{columns}
-
-\end{frame}
-
-
-
-
-
-
-\begin{frame}
-\frametitle{My Frametitle2}
-
-My second frame
-
-\end{frame}
+% \begin{frame}
+% \frametitle{Motivation}
+% 
+% \begin{columns}[t,onlytextwidth]
+% \column{.5\textwidth}
+% Some motivation here
+% 
+% \column{.5\textwidth}
+% or here
+% 
+% \end{columns}
+% 
+% \end{frame}
 
 
 
@@ -148,7 +135,7 @@ My second frame
 \begin{figure} [h]
 \begin{center}
 \includegraphics[scale=0.8]{images/dynamics_overview.pdf}
-\label{fig:pendel}
+\label{fig:system_dynamics}
 \end{center}
 \end{figure}
 % \[F_l : \text{Longitudial (tractive) force [N]} \qquad F_c : \text{Lateral
@@ -159,6 +146,7 @@ My second frame
 \[v_l, v_c : \text{Longitudial (tractive), lateral (cornering) velocity [m/s]}\]
 \[\dot{x}, \dot{y} : \text{local velocities [m/s]} \qquad \dot{\psi} :
 \text{angular velocity [1/s]}\]
+\[\delta : \text{Steering angle [rad]} \qquad \alpha : \text{Slip angle [rad]}\]
 
 \end{frame}
 
@@ -174,7 +162,7 @@ My second frame
 % v_{x_f} &= \dot{x}, & v_{x_r} &= \dot{x}
 % \end{align*}
 \begin{block}{System state and input}
-\[\xi = [\dot{x}, \dot{y}, \psi, \dot{\psi}, X, Y] \qquad \qquad u = \delta_f\]
+\[\xi = [\dot{x}, \dot{y}, \psi, \dot{\psi}, X, Y] \qquad \qquad u = \delta_f \qquad \delta_r = 0\]
 \end{block}
 
 \begin{columns}[t,onlytextwidth]
@@ -211,6 +199,22 @@ F_c &= f_c(\alpha, s, F_z)
 
 
 \begin{frame}
+\frametitle{Pacejka tire model}
+
+\begin{figure} [h]
+\begin{center}
+\includegraphics[scale=0.55]{images/pacejka_graph.png}
+\label{fig:pacejka}
+\end{center}
+\end{figure}
+
+\end{frame}
+
+
+
+
+
+\begin{frame}
 \frametitle{Trajectory generation}
 
 \begin{align*}
@@ -226,7 +230,7 @@ Y_{ref}(X) &= 2.025 \ (1 + tanh(z_1)) - 2.85 \ (1 + tanh(z_2)) \\
 \begin{figure} [h]
 \begin{center}
 \includegraphics[scale=0.37]{images/Yref_graph.png}
-\label{fig:pendel}
+\label{fig:y_reference}
 \end{center}
 \end{figure}
 
@@ -234,11 +238,27 @@ Y_{ref}(X) &= 2.025 \ (1 + tanh(z_1)) - 2.85 \ (1 + tanh(z_2)) \\
 \begin{figure} [h]
 \begin{center}
 \includegraphics[scale=0.37]{images/Psiref_graph.png}
-\label{fig:pendel}
+\label{fig:psi_reference}
 \end{center}
 \end{figure}
 
 \end{columns}
+
+\end{frame}
+
+
+
+
+
+\begin{frame}
+\frametitle{Trajectory generation}
+
+\begin{figure} [h]
+\begin{center}
+\includegraphics[scale=0.6]{images/trajectory_graph.png}
+\label{fig:reference_trajectory}
+\end{center}
+\end{figure}
 
 \end{frame}
 
@@ -278,13 +298,12 @@ horizon}\]
 \frametitle{NLP problem formulation}
 
 \begin{align*}
-\min_{\Delta U \in \mathbb{R}^{H_p}} \quad &J(\xi_t, \Delta U_t) \\
-s.t. \qquad &\xi_{k+1,t} = f(\xi_{k,t}, u_{k,t})
-+ H_{p}
-\\ &u_{k,t} = u_{k-1,t} + \Delta {u_{k,t}} \qquad \qquad k = t, . . . , t
+\min_{\Delta U_t \in \mathbb{R}^{H_p}} \quad &J(\xi_t, \Delta U_t) \\
+s.t. \qquad &\xi_{k+1,t} = f(\xi_{k,t}, u_{k,t}) \\
+&u_{k,t} = u_{k-1,t} + \Delta {u_{k,t}} \qquad \qquad k = t, . . . , t
 + H_{p}\\
 &\delta_{min} \leq u_{k,t} \leq \delta_{max} \\
-&\Delta \delta_{min} \leq \Delta u_{k,t} \leq \Delta \delta_{max} \qquad \qquad k = t, . . . , t + H_c
+&\Delta \delta_{min} \leq \Delta u_{k,t} \leq \Delta \delta_{max} \qquad \quad k = t, . . . , t + H_c
 -1 \\
 &\Delta u_{k,t} = 0, \qquad \qquad k = t + H_c, . . . , t + H_p \\
 &\xi_0 = \xi_{init} \\
@@ -303,7 +322,7 @@ s.t. \qquad &\xi_{k+1,t} = f(\xi_{k,t}, u_{k,t})
 \frametitle{LTV problem formulation }
 
 \begin{align*}
-\min_{\Delta U \in \mathbb{R}^{H_p}, \epsilon} \quad &J(\xi_t, \Delta U_t) +
+\min_{\Delta U_t \in \mathbb{R}^{H_p}, \epsilon \in \mathbb{R}} \quad &J(\xi_t, \Delta U_t) +
 \rho \epsilon \\
 s.t. \qquad &\xi_{k+1,t} = A_t \xi_k + B_t u_k \\
 &\alpha_{k,t} = C_t \xi_k + D_t u_k \\
@@ -405,7 +424,7 @@ s.t. \qquad &\xi_{k+1,t} = A_t \xi_k + B_t u_k \\
     H_p / H_c   & Y_{rms} & Y_{max} & \psi_{rms} & \psi_{max} \\ \hline
     3 \ / \ 3   & 0.078 & 0.790 & 7.800 & 7.994 \\ \hline
     7 \ / \ 3   & 0.027 & 0.447 & 2.510 & 3.246 \\ \hline
-    15 \ / \ 10 & 1.091*10^{-3} & 70.198 & 2.982*10^{3} & 1.124*10^{2} \\ \hline
+    15 \ / \ 10 & 1.091*10^{3} & 7.198*10 & 2.982*10^{3} & 1.124*10^{2} \\ \hline
     25 \ / \ 10 & 1.275*10^{3} & 7.331*10 & 3.654*10^{3} & 1.245*10^{2} \\
     \hline
   \end{tabular}
@@ -418,7 +437,7 @@ s.t. \qquad &\xi_{k+1,t} = A_t \xi_k + B_t u_k \\
     H_p / H_c   & Y_{rms} & Y_{max} & \psi_{rms} & \psi_{max} \\ \hline
     3 \ / \ 3   & 1.229*10^{2} & 3.371*10 & 1.063*10^{3} & 7.779*10^{2} \\
     \hline 7 \ / \ 3   & 0.360 & 1.616 & 1.306*10 & 9.754 \\ \hline
-    15 \ / \ 10 & 7.162*10 & 2.741*10 & 7.706*10 & 6.944*10 \\ \hline
+    15 \ / \ 10 & 7.162*10 & 2.741*10 & 7.706*10^2 & 6.944*10 \\ \hline
     25 \ / \ 10 & 0.329 & 1.456 & 1.011*10 & 65.174 \\ \hline
   \end{tabular}
 \end{center}

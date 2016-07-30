@@ -8,7 +8,7 @@ subplot(3,1,1);
 
 % Plot car XY-trajectory
 hold on;
-plot(res(:, 5), res(:, 6));
+plot(res(:, 5), res(:, 6), 'r');
 y_trajectory = zeros(size, 1);
 for i=1:size
     y_trajectory(i) = YTrajectory(res(i, 5));
@@ -25,7 +25,7 @@ title('Car trajectory');
 % Car angle trajectory
 subplot(3,1,2);
 hold on;
-plot(res(:, 5), res(:, 3));
+plot(res(:, 5), res(:, 3), 'r');
 psi_trajectory = zeros(size, 1);
 for i=1:size
     psi_trajectory(i) = PsiTrajectory(res(i, 5));
