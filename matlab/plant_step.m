@@ -1,4 +1,4 @@
-function [ xNext ] = plant_step( xPrevious, u, Ts, k, pars, integrator )
+function [ xNext ] = plant_step( xPrevious, u, Ts, k, pars )
 %PLANT_STEP returns the next state of the plant.
 %   This is the simulation function of the plant.
 % INPUTS:
@@ -11,13 +11,13 @@ function [ xNext ] = plant_step( xPrevious, u, Ts, k, pars, integrator )
 % OUTPUTS:
 %  xNext: state of the plant at step k+1
 
-if nargin < 6
-    integrator = 'ode45';
-end
+% if nargin < 6
+%     integrator = pars.integrator.type;
+% end
 
-if strcmp(integrator, 'RK4') == 1
+if strcmp(pars.integrator.type, 'RK4') == 1
     % RK4 integrator
-    Mrk = 20;
+    Mrk = pars.integrator.RK4.M;
     X = xPrevious;
     DT = Ts / Mrk;
 
@@ -33,7 +33,6 @@ if strcmp(integrator, 'RK4') == 1
 else
     % Integration step of system plant
     tspan = [k*Ts, (k+1)*Ts];
-    %init = [Dx; Dy; p; Dp; X; Y];
     [tout, Yout] = ode45(@(t, x) dgl(t, x, pars, u), tspan, xPrevious);
 
     % Compute the next state of the plant for time step (k+1)*Ts

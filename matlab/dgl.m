@@ -18,6 +18,7 @@ b = pars.b;
 I = pars.I;
 r = pars.r;
 omega = pars.omega;
+mu = pars.mu;
 
 % Nominal forces F_z on front (_f) and rear (_r) wheels
 F_z_f = (b*m*g) / (2000 * (a+b));
@@ -38,7 +39,6 @@ v_c_f = v_y_f * cosd(delta_f) - v_x_f * sind(delta_f);
 v_c_r = v_y_r * cosd(delta_r) - v_x_r * sind(delta_r);
 
 % Tire models by Pacejka
-mu = 0;
 alpha_f = atan(v_c_f / v_l_f);
 alpha_r = atan(v_c_r / v_l_r);
 v_wheel = r * omega;
@@ -48,16 +48,16 @@ if v_l_f > v_wheel
 else
     slip_f = 1 - (v_l_f / v_wheel);
 end
-% disp(slip_f);
 
 if v_l_r > v_wheel
     slip_r = (v_wheel / v_l_r) - 1;
 else
     slip_r = 1 - (v_l_r / v_wheel);
 end
-% disp(slip_r);
-slip_f = 0;
-slip_r = 0;
+%slip_f = 1 - (v_l_f / v_wheel);    % Drive case
+%slip_r = 1 - (v_l_r / v_wheel);    % Drive case
+%slip_f = 0;    % Zero slip
+%slip_r = 0;    % Zero slip
 
 [F_l_f, F_c_f] = Pacejka(alpha_f, slip_f, mu, F_z_f);
 [F_l_r, F_c_r] = Pacejka(alpha_r, slip_r, mu, F_z_r);

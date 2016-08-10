@@ -19,7 +19,7 @@ figure;
 subplot(2,1,1);
 hold on;
 plot(res(:, 1));
-plot(resY, '--g');
+%plot(resY, '--g');
 hold off;
 
 grid on;
@@ -30,12 +30,12 @@ title('Y reference trajectory');
 subplot(2,1,2);
 hold on;
 plot(res(:, 2));
-plot(resPsi, '--g');
+%plot(resPsi, '--g');
 hold off;
 
 grid on;
 xlabel('X (m)'); ylabel('psi (rad)');
-title('psi reference trajectory');
+title('Psi reference trajectory');
 
 % plot(res(:, 1));
 % hold on;

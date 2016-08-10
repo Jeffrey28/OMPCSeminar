@@ -1,8 +1,6 @@
-function [ RK4 ] = RK4_fcn( M_RK, Ts )
+function [ RK4 ] = RK4_fcn( M_RK, Ts, mu )
 
 import casadi.*;
-
-tic
 
 nx = 6;     %State dimension
 nu = 1;     %Control dimension
@@ -26,7 +24,7 @@ xi = SX.sym('xi', nx);
 
 % System dynamics
 delta_f = u * pi / 180;
-delta_r = 0;
+% delta_r = 0;
 
 vx_f = xi(1);
 vy_f = xi(2) + a * xi(4);
@@ -50,7 +48,6 @@ Fz_f = b * m * g / (2000 * (a + b));
 Fz_r = a * m * g / (2000 * (a + b));
 
 % Use friction model to determine F[l/r]_[f/r]
-mu = 0;
 [Fl_f, Fc_f] = Pacejka(alpha_f, s_f, mu, Fz_f);
 [Fl_r, Fc_r] = Pacejka(alpha_r, s_r, mu, Fz_r);
 

@@ -4,13 +4,14 @@ clear all;
 pars = plant_init();
 k = 0;
 Ts = pars.Ts;
+mu = pars.mu;
 
 %flag.opt = 0;
 flag.Np = 7;
 flag.Nc = 3;
 
 xHat = pars.x0; % TODO: Initial state guess (don't cheat and use x0 ;-P )
-RK4 = RK4_fcn(20, Ts);
+RK4 = RK4_fcn(20, Ts, mu);
 u_opt = zeros(flag.Np, 1);
 x = pars.x0;
 P = 0;
