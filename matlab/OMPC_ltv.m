@@ -118,9 +118,9 @@ for k=0:Np
     
     % Slip angle linearization
     % Front
-    alpha_fk_end = C_front * Xk + D_front * Uk;
+    alphaf_k = C_front * Xk + D_front * Uk;
     % Rear
-    alpha_rk_end = C_rear * Xk + D_rear * Uk;
+    alphar_k = C_rear * Xk + D_rear * Uk;
     
   
     %J = J + 1000 * Xk_end(6) * Xk_end(6);
@@ -149,8 +149,10 @@ for k=0:Np
 end
 
 % Create an NLP solver
+opts = struct();
+opts.ipopt.max_iter = 100;
 prob = struct('f', J, 'x', vertcat(w{:}), 'g', vertcat(g{:}));
-solver = nlpsol('solver', 'ipopt', prob);
+solver = nlpsol('solver', 'ipopt', prob, opts);
 %solver = qpsol('solver', 'qpoases', prob);
 
 sol = solver('x0', w0, 'lbx', lbw, 'ubx', ubw, 'lbg', lbg, 'ubg', ubg);

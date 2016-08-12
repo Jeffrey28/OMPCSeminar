@@ -92,7 +92,7 @@ end
 
 % Create an NLP solver
 opts = struct();
-opts.ipopt.max_iter = 1000;
+opts.ipopt.max_iter = 100;
 prob = struct('f', J, 'x', vertcat(w{:}), 'g', vertcat(g{:}));
 solver = nlpsol('solver', 'ipopt', prob, opts);
 
